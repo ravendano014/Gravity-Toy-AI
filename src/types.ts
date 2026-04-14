@@ -20,6 +20,7 @@ export type ParticleType =
   | 'neutron_star'
   | 'red_dwarf'
   | 'asteroid'
+  | 'reference_point'
   | 'spacecraft';
 export type GravityMode = 'inverseSquare' | 'exponential' | 'arctanSquared' | 'sechSquared' | 'sech';
 export type OrbitType = 'circular' | 'elliptical_low' | 'elliptical_high' | 'retrograde' | 'escape' | 'L1' | 'L2' | 'L3' | 'L4' | 'L5';
@@ -27,6 +28,7 @@ export type OrbitType = 'circular' | 'elliptical_low' | 'elliptical_high' | 'ret
 export interface Point {
   x: number;
   y: number;
+  thrustType?: 'none' | 'accelerating' | 'decelerating';
 }
 
 export interface Color {

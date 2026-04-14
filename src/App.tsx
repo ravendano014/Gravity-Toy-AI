@@ -33,80 +33,80 @@ import {
 
 const G = 800;
 
-const STAR_PRESETS: Record<string, { type: ParticleType; mass: number; density: number; name: string; color: string }> = {
-  sirius: { type: 'matter', mass: 2.02e7, density: 0.71, name: 'Sirius A', color: '#ffffff' },
-  canopus: { type: 'giant_star', mass: 8e7, density: 0.0001, name: 'Canopus', color: '#ffffff' },
-  arcturus: { type: 'giant_star', mass: 1.08e7, density: 0.0001, name: 'Arcturus', color: '#ffcc00' },
-  vega: { type: 'matter', mass: 2.1e7, density: 0.5, name: 'Vega', color: '#f0f8ff' },
-  capella: { type: 'giant_star', mass: 2.5e7, density: 0.01, name: 'Capella', color: '#ffff00' },
-  rigel: { type: 'supermassive_star', mass: 2.1e8, density: 0.000001, name: 'Rigel', color: '#87ceeb' },
-  procyon: { type: 'matter', mass: 1.5e7, density: 0.5, name: 'Procyon A', color: '#f5f5f5' },
-  betelgeuse: { type: 'supermassive_star', mass: 1.16e8, density: 0.00000001, name: 'Betelgeuse', color: '#ff4500' },
-  achernar: { type: 'matter', mass: 6.7e7, density: 0.1, name: 'Achernar', color: '#add8e6' },
-  hadar: { type: 'supermassive_star', mass: 1.0e8, density: 0.01, name: 'Hadar', color: '#0000ff' },
-  altair: { type: 'matter', mass: 1.8e7, density: 0.8, name: 'Altair', color: '#ffffff' },
-  acrux: { type: 'supermassive_star', mass: 1.8e8, density: 0.01, name: 'Acrux', color: '#0000ff' },
-  aldebaran: { type: 'giant_star', mass: 1.16e7, density: 0.00001, name: 'Aldebaran', color: '#ff8c00' },
-  antares: { type: 'supermassive_star', mass: 1.2e8, density: 0.00000001, name: 'Antares', color: '#ff0000' },
-  spica: { type: 'supermassive_star', mass: 1.14e8, density: 0.001, name: 'Spica', color: '#0000ff' },
-  pollux: { type: 'giant_star', mass: 1.9e7, density: 0.01, name: 'Pollux', color: '#ffcc66' },
-  deneb: { type: 'supermassive_star', mass: 1.9e8, density: 0.000001, name: 'Deneb', color: '#ffffff' },
-  planet: { type: 'planet', mass: 5e3, density: 1.2, name: 'Generic Planet', color: '#228b22' },
-  sun: { type: 'matter', mass: 1e7, density: 1.41, name: 'Yellow Star (Sun)', color: '#ffd700' },
-  black_hole: { type: 'blackhole', mass: 1e9, density: 10, name: 'Black Hole', color: '#000000' },
-  nebula: { type: 'nebula', mass: 5e6, density: 0.001, name: 'Nebula', color: '#6432c8' },
-  asteroid: { type: 'planet', mass: 0.01, density: 2.5, name: 'Asteroid', color: '#696969' },
-  comet: { type: 'comet', mass: 0.001, density: 0.5, name: 'Comet', color: '#e0ffff' },
-  red_dwarf: { type: 'matter', mass: 1e6, density: 10, name: 'Red Dwarf', color: '#ff4500' },
-  red_giant: { type: 'giant_star', mass: 2e7, density: 0.001, name: 'Red Giant', color: '#ff6347' },
-  blue_giant: { type: 'supermassive_star', mass: 1e8, density: 0.1, name: 'Blue Giant', color: '#00bfff' },
-  supermassive_star: { type: 'supermassive_star', mass: 5e8, density: 0.5, name: 'Supermassive Star', color: '#96c8ff' },
-  white_dwarf: { type: 'white_dwarf', mass: 1e7, density: 1000, name: 'White Dwarf', color: '#f0f8ff' },
-  neutron_star: { type: 'neutron', mass: 3e8, density: 5000, name: 'Neutron Star', color: '#e6e6fa' },
-  magnetar: { type: 'magnetar', mass: 4.5e8, density: 5000, name: 'Magnetar', color: '#b4dcff' },
-  pulsar: { type: 'pulsar', mass: 4e8, density: 3000, name: 'Pulsar', color: '#da70d6' },
-  supernova: { type: 'supernova', mass: 1e8, density: 0.001, name: 'Supernova', color: '#ff6432' },
-  quasar: { type: 'quasar', mass: 1e11, density: 12, name: 'Quasar', color: '#ffffff' },
-  wormhole: { type: 'wormhole', mass: 0, density: 1, name: 'Wormhole', color: '#00ffff' },
-  mercury: { type: 'planet', mass: 1.66, density: 5.43, name: 'Mercury', color: '#a5a5a5' },
-  venus: { type: 'planet', mass: 24.48, density: 5.24, name: 'Venus', color: '#e3bb76' },
-  earth: { type: 'planet', mass: 30.04, density: 5.51, name: 'Earth', color: '#2271b3' },
-  mars: { type: 'planet', mass: 3.21, density: 3.93, name: 'Mars', color: '#e27b58' },
-  jupiter: { type: 'planet', mass: 9545, density: 1.33, name: 'Jupiter', color: '#d39c7e' },
-  saturn: { type: 'planet', mass: 2859, density: 0.69, name: 'Saturn', color: '#c5ab6e' },
-  uranus: { type: 'planet', mass: 435, density: 1.27, name: 'Uranus', color: '#bbe1e4' },
-  neptune: { type: 'planet', mass: 514, density: 1.64, name: 'Neptune', color: '#6081ff' },
-  pluto: { type: 'planet', mass: 0.065, density: 1.86, name: 'Pluto', color: '#ffdab9' },
-  moon: { type: 'planet', mass: 0.37, density: 3.34, name: 'The Moon (Earth)', color: '#d3d3d3' },
-  io: { type: 'planet', mass: 0.45, density: 3.53, name: 'Io (Jupiter)', color: '#ffff00' },
-  europa: { type: 'planet', mass: 0.24, density: 3.01, name: 'Europa (Jupiter)', color: '#f5f5dc' },
-  ganymede: { type: 'planet', mass: 0.75, density: 1.94, name: 'Ganymede (Jupiter)', color: '#8b8b8b' },
-  callisto: { type: 'planet', mass: 0.54, density: 1.83, name: 'Callisto (Jupiter)', color: '#8b4513' },
-  phobos: { type: 'planet', mass: 0.0001, density: 1.87, name: 'Phobos (Mars)', color: '#a9a9a9' },
-  deimos: { type: 'planet', mass: 0.00001, density: 1.47, name: 'Deimos (Mars)', color: '#d3d3d3' },
-  mimas: { type: 'planet', mass: 0.005, density: 1.15, name: 'Mimas (Saturn)', color: '#d3d3d3' },
-  enceladus: { type: 'planet', mass: 0.001, density: 1.61, name: 'Enceladus (Saturn)', color: '#ffffff' },
-  tethys: { type: 'planet', mass: 0.09, density: 0.98, name: 'Tethys (Saturn)', color: '#d3d3d3' },
-  dione: { type: 'planet', mass: 0.16, density: 1.48, name: 'Dione (Saturn)', color: '#d3d3d3' },
-  rhea: { type: 'planet', mass: 0.33, density: 1.23, name: 'Rhea (Saturn)', color: '#d3d3d3' },
-  titan: { type: 'planet', mass: 0.67, density: 1.88, name: 'Titan (Saturn)', color: '#ffcc00' },
-  iapetus: { type: 'planet', mass: 0.27, density: 1.08, name: 'Iapetus (Saturn)', color: '#d3d3d3' },
-  miranda: { type: 'planet', mass: 0.009, density: 1.2, name: 'Miranda (Uranus)', color: '#d3d3d3' },
-  ariel: { type: 'planet', mass: 0.18, density: 1.66, name: 'Ariel (Uranus)', color: '#d3d3d3' },
-  umbriel: { type: 'planet', mass: 0.18, density: 1.39, name: 'Umbriel (Uranus)', color: '#d3d3d3' },
-  titania: { type: 'planet', mass: 0.51, density: 1.71, name: 'Titania (Uranus)', color: '#d3d3d3' },
-  oberon: { type: 'planet', mass: 0.45, density: 1.63, name: 'Oberon (Uranus)', color: '#d3d3d3' },
-  triton: { type: 'planet', mass: 0.11, density: 2.06, name: 'Triton (Neptune)', color: '#add8e6' },
-  charon: { type: 'planet', mass: 0.24, density: 1.7, name: 'Charon (Pluto)', color: '#d3d3d3' },
-  voyager: { type: 'spacecraft', mass: 1e-6, density: 1, name: 'Voyager 1/2', color: '#c0c0c0' },
-  sls: { type: 'spacecraft', mass: 2e-6, density: 1, name: 'NASA SLS', color: '#ff8c00' },
-  apollo: { type: 'spacecraft', mass: 1.5e-6, density: 1, name: 'Apollo CSM', color: '#ffffff' },
-  spacex_starship: { type: 'spacecraft', mass: 3e-6, density: 1, name: 'SpaceX Starship', color: '#b0b0b0' },
-  blue_moon: { type: 'spacecraft', mass: 1.2e-6, density: 1, name: 'Blue Moon Lander', color: '#add8e6' },
-  shuttle: { type: 'spacecraft', mass: 2.5e-6, density: 1, name: 'Space Shuttle', color: '#ffffff' },
-  iss: { type: 'spacecraft', mass: 5e-6, density: 1, name: 'ISS', color: '#ffffff' },
-  hubble: { type: 'spacecraft', mass: 1e-6, density: 1, name: 'Hubble Telescope', color: '#c0c0c0' },
-  jwst: { type: 'spacecraft', mass: 1.1e-6, density: 1, name: 'James Webb (JWST)', color: '#ffd700' },
+const STAR_PRESETS: Record<string, { type: ParticleType; mass: number; density: number; diameter: number; name: string; color: string }> = {
+  sirius: { type: 'matter', mass: 4.017e30, density: 0.71, diameter: 2400000, name: 'Sirius A', color: '#ffffff' },
+  canopus: { type: 'giant_star', mass: 1.591e31, density: 0.0001, diameter: 100000000, name: 'Canopus', color: '#ffffff' },
+  arcturus: { type: 'giant_star', mass: 2.148e30, density: 0.0001, diameter: 35000000, name: 'Arcturus', color: '#ffcc00' },
+  vega: { type: 'matter', mass: 4.176e30, density: 0.5, diameter: 2700000, name: 'Vega', color: '#f0f8ff' },
+  capella: { type: 'giant_star', mass: 4.972e30, density: 0.01, diameter: 12000000, name: 'Capella', color: '#ffff00' },
+  rigel: { type: 'supermassive_star', mass: 4.176e31, density: 0.000001, diameter: 100000000, name: 'Rigel', color: '#87ceeb' },
+  procyon: { type: 'matter', mass: 2.983e30, density: 0.5, diameter: 2000000, name: 'Procyon A', color: '#f5f5f5' },
+  betelgeuse: { type: 'supermassive_star', mass: 2.307e31, density: 0.00000001, diameter: 1200000000, name: 'Betelgeuse', color: '#ff4500' },
+  achernar: { type: 'matter', mass: 1.332e31, density: 0.1, diameter: 8000000, name: 'Achernar', color: '#add8e6' },
+  hadar: { type: 'supermassive_star', mass: 1.989e31, density: 0.01, diameter: 15000000, name: 'Hadar', color: '#0000ff' },
+  altair: { type: 'matter', mass: 3.580e30, density: 0.8, diameter: 2200000, name: 'Altair', color: '#ffffff' },
+  acrux: { type: 'supermassive_star', mass: 3.580e31, density: 0.01, diameter: 20000000, name: 'Acrux', color: '#0000ff' },
+  aldebaran: { type: 'giant_star', mass: 2.307e30, density: 0.00001, diameter: 60000000, name: 'Aldebaran', color: '#ff8c00' },
+  antares: { type: 'supermassive_star', mass: 2.386e31, density: 0.00000001, diameter: 1100000000, name: 'Antares', color: '#ff0000' },
+  spica: { type: 'supermassive_star', mass: 2.267e31, density: 0.001, diameter: 10000000, name: 'Spica', color: '#0000ff' },
+  pollux: { type: 'giant_star', mass: 3.779e30, density: 0.01, diameter: 12000000, name: 'Pollux', color: '#ffcc66' },
+  deneb: { type: 'supermassive_star', mass: 3.779e31, density: 0.000001, diameter: 200000000, name: 'Deneb', color: '#ffffff' },
+  planet: { type: 'planet', mass: 5.972e24, density: 5.51, diameter: 12742, name: 'Generic Planet', color: '#228b22' },
+  sun: { type: 'matter', mass: 1.989e30, density: 1.41, diameter: 1392700, name: 'Yellow Star (Sun)', color: '#ffd700' },
+  black_hole: { type: 'blackhole', mass: 1.989e32, density: 10, diameter: 295, name: 'Black Hole', color: '#000000' },
+  nebula: { type: 'nebula', mass: 9.945e30, density: 0.001, diameter: 1000000000, name: 'Nebula', color: '#6432c8' },
+  asteroid: { type: 'planet', mass: 1e18, density: 2.5, diameter: 100, name: 'Asteroid', color: '#696969' },
+  comet: { type: 'comet', mass: 1e15, density: 0.5, diameter: 10, name: 'Comet', color: '#e0ffff' },
+  red_dwarf: { type: 'matter', mass: 1.989e29, density: 10, diameter: 500000, name: 'Red Dwarf', color: '#ff4500' },
+  red_giant: { type: 'giant_star', mass: 3.978e30, density: 0.001, diameter: 100000000, name: 'Red Giant', color: '#ff6347' },
+  blue_giant: { type: 'supermassive_star', mass: 1.989e31, density: 0.1, diameter: 10000000, name: 'Blue Giant', color: '#00bfff' },
+  supermassive_star: { type: 'supermassive_star', mass: 9.945e31, density: 0.5, diameter: 20000000, name: 'Supermassive Star', color: '#96c8ff' },
+  white_dwarf: { type: 'white_dwarf', mass: 1.989e30, density: 1000, diameter: 12000, name: 'White Dwarf', color: '#f0f8ff' },
+  neutron_star: { type: 'neutron', mass: 5.967e31, density: 5000, diameter: 20, name: 'Neutron Star', color: '#e6e6fa' },
+  magnetar: { type: 'magnetar', mass: 8.950e31, density: 5000, diameter: 20, name: 'Magnetar', color: '#b4dcff' },
+  pulsar: { type: 'pulsar', mass: 7.956e31, density: 3000, diameter: 20, name: 'Pulsar', color: '#da70d6' },
+  supernova: { type: 'supernova', mass: 1.989e31, density: 0.001, diameter: 100000000, name: 'Supernova', color: '#ff6432' },
+  quasar: { type: 'quasar', mass: 1.989e41, density: 12, diameter: 1000000000, name: 'Quasar', color: '#ffffff' },
+  wormhole: { type: 'wormhole', mass: 0, density: 1, diameter: 1000, name: 'Wormhole', color: '#00ffff' },
+  mercury: { type: 'planet', mass: 3.301e23, density: 5.43, diameter: 4879, name: 'Mercury', color: '#a5a5a5' },
+  venus: { type: 'planet', mass: 4.867e24, density: 5.24, diameter: 12104, name: 'Venus', color: '#e3bb76' },
+  earth: { type: 'planet', mass: 5.972e24, density: 5.51, diameter: 12742, name: 'Earth', color: '#2271b3' },
+  mars: { type: 'planet', mass: 6.390e23, density: 3.93, diameter: 6779, name: 'Mars', color: '#e27b58' },
+  jupiter: { type: 'planet', mass: 1.898e27, density: 1.33, diameter: 139820, name: 'Jupiter', color: '#d39c7e' },
+  saturn: { type: 'planet', mass: 5.683e26, density: 0.69, diameter: 116460, name: 'Saturn', color: '#c5ab6e' },
+  uranus: { type: 'planet', mass: 8.681e25, density: 1.27, diameter: 50724, name: 'Uranus', color: '#bbe1e4' },
+  neptune: { type: 'planet', mass: 1.024e26, density: 1.64, diameter: 49244, name: 'Neptune', color: '#6081ff' },
+  pluto: { type: 'planet', mass: 1.309e22, density: 1.86, diameter: 2377, name: 'Pluto', color: '#ffdab9' },
+  moon: { type: 'planet', mass: 7.342e22, density: 3.34, diameter: 3474, name: 'The Moon (Earth)', color: '#d3d3d3' },
+  io: { type: 'planet', mass: 8.932e22, density: 3.53, diameter: 3643, name: 'Io (Jupiter)', color: '#ffff00' },
+  europa: { type: 'planet', mass: 4.800e22, density: 3.01, diameter: 3122, name: 'Europa (Jupiter)', color: '#f5f5dc' },
+  ganymede: { type: 'planet', mass: 1.482e23, density: 1.94, diameter: 5268, name: 'Ganymede (Jupiter)', color: '#8b8b8b' },
+  callisto: { type: 'planet', mass: 1.076e23, density: 1.83, diameter: 4821, name: 'Callisto (Jupiter)', color: '#8b4513' },
+  phobos: { type: 'planet', mass: 1.066e16, density: 1.87, diameter: 22, name: 'Phobos (Mars)', color: '#a9a9a9' },
+  deimos: { type: 'planet', mass: 1.476e15, density: 1.47, diameter: 12, name: 'Deimos (Mars)', color: '#d3d3d3' },
+  mimas: { type: 'planet', mass: 3.750e19, density: 1.15, diameter: 396, name: 'Mimas (Saturn)', color: '#d3d3d3' },
+  enceladus: { type: 'planet', mass: 1.080e20, density: 1.61, diameter: 504, name: 'Enceladus (Saturn)', color: '#ffffff' },
+  tethys: { type: 'planet', mass: 6.170e20, density: 0.98, diameter: 1062, name: 'Tethys (Saturn)', color: '#d3d3d3' },
+  dione: { type: 'planet', mass: 1.095e21, density: 1.48, diameter: 1122, name: 'Dione (Saturn)', color: '#d3d3d3' },
+  rhea: { type: 'planet', mass: 2.306e21, density: 1.23, diameter: 1527, name: 'Rhea (Saturn)', color: '#d3d3d3' },
+  titan: { type: 'planet', mass: 1.345e23, density: 1.88, diameter: 5150, name: 'Titan (Saturn)', color: '#ffcc00' },
+  iapetus: { type: 'planet', mass: 1.805e21, density: 1.08, diameter: 1469, name: 'Iapetus (Saturn)', color: '#d3d3d3' },
+  miranda: { type: 'planet', mass: 6.590e19, density: 1.2, diameter: 471, name: 'Miranda (Uranus)', color: '#d3d3d3' },
+  ariel: { type: 'planet', mass: 1.353e21, density: 1.66, diameter: 1158, name: 'Ariel (Uranus)', color: '#d3d3d3' },
+  umbriel: { type: 'planet', mass: 1.172e21, density: 1.39, diameter: 1169, name: 'Umbriel (Uranus)', color: '#d3d3d3' },
+  titania: { type: 'planet', mass: 3.527e21, density: 1.71, diameter: 1578, name: 'Titania (Uranus)', color: '#d3d3d3' },
+  oberon: { type: 'planet', mass: 3.014e21, density: 1.63, diameter: 1522, name: 'Oberon (Uranus)', color: '#d3d3d3' },
+  triton: { type: 'planet', mass: 2.140e22, density: 2.06, diameter: 2706, name: 'Triton (Neptune)', color: '#add8e6' },
+  charon: { type: 'planet', mass: 1.586e21, density: 1.7, diameter: 1212, name: 'Charon (Pluto)', color: '#d3d3d3' },
+  voyager: { type: 'spacecraft', mass: 722, density: 1, diameter: 0.004, name: 'Voyager 1/2', color: '#c0c0c0' },
+  sls: { type: 'spacecraft', mass: 2.6e6, density: 1, diameter: 0.008, name: 'NASA SLS', color: '#ff8c00' },
+  apollo: { type: 'spacecraft', mass: 4.5e4, density: 1, diameter: 0.004, name: 'Apollo CSM', color: '#ffffff' },
+  spacex_starship: { type: 'spacecraft', mass: 5e6, density: 1, diameter: 0.009, name: 'SpaceX Starship', color: '#b0b0b0' },
+  blue_moon: { type: 'spacecraft', mass: 1.5e4, density: 1, diameter: 0.007, name: 'Blue Moon Lander', color: '#add8e6' },
+  shuttle: { type: 'spacecraft', mass: 2e6, density: 1, diameter: 0.037, name: 'Space Shuttle', color: '#ffffff' },
+  iss: { type: 'spacecraft', mass: 4.5e5, density: 1, diameter: 0.109, name: 'ISS', color: '#ffffff' },
+  hubble: { type: 'spacecraft', mass: 1.1e4, density: 1, diameter: 0.013, name: 'Hubble Telescope', color: '#c0c0c0' },
+  jwst: { type: 'spacecraft', mass: 6.5e3, density: 1, diameter: 0.02, name: 'James Webb (JWST)', color: '#ffd700' },
 };
 
 export default function App() {
@@ -136,11 +136,12 @@ export default function App() {
     return new Date(startDateRef.current.getTime() + years * msPerYear);
   }, [simulationTime]);
   const [gravityMode, setGravityMode] = useState<GravityMode>('inverseSquare');
-  const [newMass, setNewMass] = useState(1000);
+  const [newMass, setNewMass] = useState(1.989e30);
   const [newDensity, setNewDensity] = useState(1.41);
+  const [newDiameter, setNewDiameter] = useState(1392700);
   const [newColor, setNewColor] = useState('#ffffff');
   const [particleType, setParticleType] = useState<ParticleType>('matter');
-  const [orbiterDistance, setOrbiterDistance] = useState(3);
+  const [orbiterDistance, setOrbiterDistance] = useState(149600000); // 1 AU in km
   const [orbiterOrbitType, setOrbiterOrbitType] = useState<OrbitType>('circular');
   const [particleName, setParticleName] = useState('New Particle');
   const [trailsEnabled, setTrailsEnabled] = useState(false);
@@ -163,6 +164,7 @@ export default function App() {
   const [rulerUnit, setRulerUnit] = useState<'km' | 'mi' | 'AU' | 'ly'>('km');
   const [scaleUnit, setScaleUnit] = useState<'AU' | 'Mmi' | 'Mkm' | 'lm'>('AU');
   const [selectedExperiment, setSelectedExperiment] = useState('');
+  const [selectedScenario, setSelectedScenario] = useState('');
   const [selectedParticleId, setSelectedParticleId] = useState<string | null>(null);
   const [followSelected, setFollowSelected] = useState(false);
   const [showParticleList, setShowParticleList] = useState(false);
@@ -171,6 +173,10 @@ export default function App() {
   const [simSpeed, setSimSpeed] = useState(0.002);
   const [saveName, setSaveName] = useState('');
   const [savedSystems, setSavedSystems] = useState<string[]>([]);
+  const [showReferenceTrajectory, setShowReferenceTrajectory] = useState(true);
+  const [orbitTracerEnabled, setOrbitTracerEnabled] = useState(false);
+  const [orbitPlannerEnabled, setOrbitPlannerEnabled] = useState(false);
+  const [plannedOrbits, setPlannedOrbits] = useState<{x: number, y: number, vx: number, vy: number, color: string}[]>([]);
 
   useEffect(() => {
     const keys = Object.keys(localStorage).filter(key => key.startsWith('gravity_sim_'));
@@ -234,7 +240,8 @@ export default function App() {
           pData.type,
           pData.name,
           pData.density,
-          pData.color
+          pData.color,
+          pData.diameter
         );
         p.id = pData.id || p.id;
         engine.addParticle(p);
@@ -314,13 +321,15 @@ export default function App() {
     type?: ParticleType, 
     name?: string, 
     density?: number, 
-    color?: string
+    color?: string,
+    diameter?: number
   ) => {
     const m = mass ?? newMass;
     const t = type ?? particleType;
     const n = name ?? `${parent.name}'s Moon`;
     const d = density ?? newDensity;
     const c = color ? hexToColor(color) : hexToColor(newColor);
+    const diam = diameter ?? newDiameter;
 
     let ox, oy, ovx, ovy;
 
@@ -388,7 +397,8 @@ export default function App() {
       t, 
       n, 
       d, 
-      c
+      c,
+      diam
     );
     engine.addParticle(orbiter);
   };
@@ -619,11 +629,30 @@ export default function App() {
       ctx.lineWidth = 1 / zoom;
       engine.particles.forEach(p => {
         if (p.path.length > 1) {
+          let currentType = p.path[0].thrustType || 'none';
           ctx.beginPath();
-          ctx.strokeStyle = `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, 0.5)`;
           ctx.moveTo(p.path[0].x, p.path[0].y);
+          
+          const getStrokeStyle = (type: string) => {
+            if (type === 'accelerating') return "rgba(255, 100, 0, 0.8)"; // Orange/Red for acceleration
+            if (type === 'decelerating') return "rgba(0, 200, 255, 0.8)"; // Cyan/Blue for deceleration
+            return `rgba(${p.color[0]}, ${p.color[1]}, ${p.color[2]}, 0.5)`;
+          };
+
+          ctx.strokeStyle = getStrokeStyle(currentType);
+
           for (let i = 1; i < p.path.length; i++) {
-            ctx.lineTo(p.path[i].x, p.path[i].y);
+            const pt = p.path[i];
+            const type = pt.thrustType || 'none';
+            
+            if (type !== currentType) {
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.moveTo(p.path[i-1].x, p.path[i-1].y);
+              ctx.strokeStyle = getStrokeStyle(type);
+              currentType = type;
+            }
+            ctx.lineTo(pt.x, pt.y);
           }
           ctx.stroke();
         }
@@ -850,6 +879,13 @@ export default function App() {
         ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
         ctx.fillStyle = `rgb(${p.color[0]}, ${p.color[1]}, ${p.color[2]})`;
         ctx.fill();
+      } else if (p.type === 'reference_point') {
+        if (showReferenceTrajectory) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 2 / zoom, 0, 2 * Math.PI);
+          ctx.fillStyle = "rgba(0, 255, 255, 0.5)";
+          ctx.fill();
+        }
       } else if (p.type === 'wormhole') {
         const time = Date.now() / 1000;
         const wormGrad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
@@ -902,6 +938,33 @@ export default function App() {
         ctx.fill();
       }
 
+      // Draw Collision Flash
+      if (p.collisionTimer > 0) {
+        const flashRadius = p.radius * (1 + p.collisionEnergy * 10);
+        const flashGrad = ctx.createRadialGradient(p.x, p.y, p.radius, p.x, p.y, flashRadius);
+        const alpha = p.collisionTimer * 0.8;
+        flashGrad.addColorStop(0, `rgba(255, 255, 255, ${alpha})`);
+        flashGrad.addColorStop(0.5, `rgba(255, 200, 100, ${alpha * 0.5})`);
+        flashGrad.addColorStop(1, "rgba(255, 50, 0, 0)");
+        
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, flashRadius, 0, 2 * Math.PI);
+        ctx.fillStyle = flashGrad;
+        ctx.fill();
+        
+        // Lens flare effect for high energy collisions
+        if (p.collisionEnergy > 0.8) {
+           ctx.beginPath();
+           ctx.strokeStyle = `rgba(255, 255, 255, ${alpha * 0.5})`;
+           ctx.lineWidth = 2 / zoom;
+           ctx.moveTo(p.x - flashRadius * 2, p.y);
+           ctx.lineTo(p.x + flashRadius * 2, p.y);
+           ctx.moveTo(p.x, p.y - flashRadius * 2);
+           ctx.lineTo(p.x, p.y + flashRadius * 2);
+           ctx.stroke();
+        }
+      }
+
       // Labels
       if (showNames && p.name) {
         ctx.fillStyle = "white";
@@ -917,6 +980,87 @@ export default function App() {
         ctx.fillText(`M: ${massText}`, p.x, p.y + p.radius + (showNames ? 15 / zoom : 5 / zoom));
       }
     });
+
+    // Draw Orbit Tracer
+    if (orbitTracerEnabled && selectedParticleId) {
+      const p = engine.particles.find(p => p.id === selectedParticleId);
+      if (p) {
+        const result = engine.projectOrbit(p, 1200);
+        const projection = result.path;
+        
+        if (projection.length > 0) {
+          ctx.beginPath();
+          ctx.setLineDash([5 / zoom, 5 / zoom]);
+          ctx.moveTo(p.x, p.y);
+          projection.forEach(pt => ctx.lineTo(pt.x, pt.y));
+          ctx.strokeStyle = "rgba(168, 85, 247, 0.6)";
+          ctx.lineWidth = 1.5 / zoom;
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Draw Markers
+          projection.forEach((pt, idx) => {
+            // Time markers every 100 units of simulation time
+            if (Math.floor(pt.time / 100) > Math.floor((projection[idx-1]?.time || 0) / 100)) {
+              ctx.beginPath();
+              ctx.arc(pt.x, pt.y, 3 / zoom, 0, 2 * Math.PI);
+              ctx.fillStyle = "rgba(168, 85, 247, 0.8)";
+              ctx.fill();
+              ctx.font = `${8 / zoom}px Courier New`;
+              ctx.fillText(`T+${Math.floor(pt.time)}`, pt.x + 5 / zoom, pt.y);
+            }
+
+            if (pt.isPeriapsis) {
+              ctx.beginPath();
+              ctx.arc(pt.x, pt.y, 5 / zoom, 0, 2 * Math.PI);
+              ctx.strokeStyle = "#00ffcc";
+              ctx.lineWidth = 2 / zoom;
+              ctx.stroke();
+              ctx.fillStyle = "#00ffcc";
+              ctx.font = `bold ${10 / zoom}px Courier New`;
+              ctx.fillText("PERIAPSIS", pt.x + 8 / zoom, pt.y - 8 / zoom);
+            }
+
+            if (pt.collided) {
+              ctx.beginPath();
+              ctx.moveTo(pt.x - 10 / zoom, pt.y - 10 / zoom);
+              ctx.lineTo(pt.x + 10 / zoom, pt.y + 10 / zoom);
+              ctx.moveTo(pt.x + 10 / zoom, pt.y - 10 / zoom);
+              ctx.lineTo(pt.x - 10 / zoom, pt.y + 10 / zoom);
+              ctx.strokeStyle = "#ff3333";
+              ctx.lineWidth = 3 / zoom;
+              ctx.stroke();
+              ctx.fillStyle = "#ff3333";
+              ctx.font = `bold ${12 / zoom}px Courier New`;
+              ctx.fillText("IMPACT", pt.x + 15 / zoom, pt.y);
+            }
+          });
+
+          // Display Telemetry for Tracer
+          const dominant = engine.getDominantSource(p);
+          if (dominant) {
+            const dx = p.x - dominant.x;
+            const dy = p.y - dominant.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+            
+            ctx.fillStyle = "rgba(168, 85, 247, 0.9)";
+            ctx.font = `${10 / zoom}px Courier New`;
+            ctx.textAlign = "left";
+            let yOffset = -40 / zoom;
+            ctx.fillText(`TRACER DATA [${p.name}]`, p.x + 15 / zoom, p.y + yOffset); yOffset += 12 / zoom;
+            ctx.fillText(`Rel to: ${dominant.name}`, p.x + 15 / zoom, p.y + yOffset); yOffset += 12 / zoom;
+            ctx.fillText(`Dist: ${dist.toFixed(2)}`, p.x + 15 / zoom, p.y + yOffset); yOffset += 12 / zoom;
+            ctx.fillText(`Vel: ${vel.toFixed(4)}`, p.x + 15 / zoom, p.y + yOffset); yOffset += 12 / zoom;
+            
+            if (result.periapsis) {
+              ctx.fillStyle = "#00ffcc";
+              ctx.fillText(`Next Periapsis: ${result.periapsis.dist.toFixed(2)}`, p.x + 15 / zoom, p.y + yOffset); yOffset += 12 / zoom;
+            }
+          }
+        }
+      }
+    }
 
     // Draw Lagrange Points
     if (showLagrange && selectedParticleId) {
@@ -1047,6 +1191,34 @@ export default function App() {
       });
     }
 
+    // Draw Planned Orbits (Orbit Planner)
+    plannedOrbits.forEach((orb, idx) => {
+      const ghost = new Particle(newMass, orb.x, orb.y, orb.vx, orb.vy, 'spacecraft', 'Ghost');
+      const result = engine.projectOrbit(ghost, 1500);
+      const projection = result.path;
+      
+      if (projection.length > 0) {
+        ctx.beginPath();
+        ctx.setLineDash([3 / zoom, 6 / zoom]);
+        ctx.moveTo(orb.x, orb.y);
+        projection.forEach(pt => ctx.lineTo(pt.x, pt.y));
+        ctx.strokeStyle = orb.color + "88"; // Semi-transparent
+        ctx.lineWidth = 1 / zoom;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Draw small X at start
+        ctx.beginPath();
+        ctx.moveTo(orb.x - 5 / zoom, orb.y - 5 / zoom);
+        ctx.lineTo(orb.x + 5 / zoom, orb.y + 5 / zoom);
+        ctx.moveTo(orb.x + 5 / zoom, orb.y - 5 / zoom);
+        ctx.lineTo(orb.x - 5 / zoom, orb.y + 5 / zoom);
+        ctx.strokeStyle = orb.color;
+        ctx.lineWidth = 2 / zoom;
+        ctx.stroke();
+      }
+    });
+
     // Draw Drag Line
     if (isDraggingRef.current && !isPanningRef.current && !rulerEnabled) {
       const start = dragStartRef.current;
@@ -1054,6 +1226,32 @@ export default function App() {
       const wStart = { x: (start.x - pan.x) / zoom, y: (start.y - pan.y) / zoom };
       const wEnd = { x: (end.x - pan.x) / zoom, y: (end.y - pan.y) / zoom };
       
+      // Orbit Preview during drag
+      if (orbitTracerEnabled || orbitPlannerEnabled) {
+        const vx = (wEnd.x - wStart.x);
+        const vy = (wEnd.y - wStart.y);
+        const ghost = new Particle(newMass, wStart.x, wStart.y, vx, vy, 'spacecraft', 'Ghost');
+        const result = engine.projectOrbit(ghost, 1000);
+        const projection = result.path;
+        
+        if (projection.length > 0) {
+          ctx.beginPath();
+          ctx.setLineDash([4 / zoom, 4 / zoom]);
+          ctx.moveTo(wStart.x, wStart.y);
+          projection.forEach(pt => ctx.lineTo(pt.x, pt.y));
+          ctx.strokeStyle = orbitPlannerEnabled ? "rgba(249, 115, 22, 0.5)" : "rgba(168, 85, 247, 0.5)";
+          ctx.lineWidth = 1.5 / zoom;
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          if (orbitPlannerEnabled && result.periapsis) {
+            ctx.fillStyle = "#00ffcc";
+            ctx.font = `bold ${12 / zoom}px Courier New`;
+            ctx.fillText(`Est. Periapsis: ${result.periapsis.dist.toFixed(2)}`, wEnd.x + 10 / zoom, wEnd.y + 20 / zoom);
+          }
+        }
+      }
+
       ctx.beginPath();
       ctx.moveTo(wStart.x, wStart.y);
       ctx.lineTo(wEnd.x, wEnd.y);
@@ -1209,8 +1407,12 @@ export default function App() {
       const vx = (wEnd.x - wStart.x);
       const vy = (wEnd.y - wStart.y);
       
-      const p = new Particle(newMass, wStart.x, wStart.y, vx, vy, particleType, particleName, newDensity, hexToColor(newColor));
+      const p = new Particle(newMass, wStart.x, wStart.y, vx, vy, particleType, particleName, newDensity, hexToColor(newColor), newDiameter);
       engine.addParticle(p);
+
+      if (orbitPlannerEnabled) {
+        setPlannedOrbits(prev => [...prev, { x: wStart.x, y: wStart.y, vx, vy, color: newColor }]);
+      }
     }
     
     isDraggingRef.current = false;
@@ -1282,7 +1484,8 @@ export default function App() {
       corePreset.type, 
       corePreset.name, 
       corePreset.density, 
-      hexToColor(corePreset.color)
+      hexToColor(corePreset.color),
+      corePreset.diameter
     );
     engine.addParticle(core);
 
@@ -1332,7 +1535,8 @@ export default function App() {
         orbiterPreset.type,
         orbiterPreset.name,
         orbiterPreset.density,
-        hexToColor(orbiterPreset.color)
+        hexToColor(orbiterPreset.color),
+        orbiterPreset.diameter
       );
       engine.addParticle(orbiter);
 
@@ -1376,7 +1580,7 @@ export default function App() {
         const vy = speed * Math.cos(angle);
         
         const dType: ParticleType = Math.random() > 0.8 ? 'comet' : (Math.random() > 0.4 ? 'asteroid' : 'dark');
-        const debris = new Particle(0.01 + Math.random() * 0.5, x, y, vx, vy, dType, '', 5);
+        const debris = new Particle((0.01 + Math.random() * 0.5) * 1.98847e23, x, y, vx, vy, dType, '', 5, undefined, undefined);
         engine.addParticle(debris);
       }
     }
@@ -1391,11 +1595,11 @@ export default function App() {
       const nSpeed = Math.sqrt((G * core.mass) / nDist) * 0.3;
       const nvx = -nSpeed * Math.sin(nAngle);
       const nvy = nSpeed * Math.cos(nAngle);
-      engine.addParticle(new Particle(5000, nx, ny, nvx, nvy, 'nebula', '', 0.001, { 
+      engine.addParticle(new Particle(5000 * 1.98847e23, nx, ny, nvx, nvy, 'nebula', '', 0.001, { 
         0: Math.floor(Math.random() * 100 + 50), 
         1: Math.floor(Math.random() * 50), 
         2: Math.floor(Math.random() * 150 + 100) 
-      }));
+      }, 1000000000));
     }
 
     setZoom(0.002);
@@ -1403,69 +1607,163 @@ export default function App() {
   };
 
   const generateGalaxy = () => {
-    engine.clear();
     const centerX = (window.innerWidth / 2 - pan.x) / zoom;
     const centerY = (window.innerHeight / 2 - pan.y) / zoom;
     
-    // Core: Supermassive Black Hole
-    const coreMass = 8e7;
-    const core = new Particle(coreMass, centerX, centerY, 0, 0, 'blackhole', 'Sgr A*', 1, { 0: 0, 1: 0, 2: 0 });
+    // Random Galaxy Flavor
+    const flavors = ['Standard', 'Antimatter', 'Chaotic', 'DarkMatter'] as const;
+    const flavor = flavors[Math.floor(Math.random() * flavors.length)];
+    
+    // Core: Supermassive Black Hole or Exotic Nucleus
+    let coreMass = 6.5e9 * 1.989e30; 
+    let coreType: ParticleType = Math.random() > 0.5 ? 'quasar' : 'blackhole';
+    let coreName = coreType === 'quasar' ? 'Galactic Nucleus (M87*)' : 'Supermassive Black Hole';
+    let coreColor: Color = coreType === 'quasar' ? { 0: 255, 1: 255, 2: 255 } : { 0: 20, 1: 20, 2: 20 };
+
+    if (flavor === 'Antimatter') {
+      coreType = 'antimatter';
+      coreName = 'Antimatter Void';
+      coreColor = { 0: 100, 1: 50, 2: 255 };
+    } else if (flavor === 'Chaotic') {
+      coreType = 'blackhole';
+      coreName = 'Chaotic Singularity';
+      coreColor = { 0: 50, 1: 0, 2: 50 };
+    } else if (flavor === 'DarkMatter') {
+      coreType = 'dark';
+      coreName = 'Dark Halo Core';
+      coreColor = { 0: 30, 1: 30, 2: 40 };
+    }
+
+    const core = new Particle(coreMass, centerX, centerY, 0, 0, coreType, coreName, 1e12, coreColor, 38000000000);
     engine.addParticle(core);
 
-    const numParticles = 200; 
-    const numArms = 2;
-    const allTypes: ParticleType[] = [
-      'matter', 'antimatter', 'dark', 'neutron', 'pulsar', 'quasar', 
-      'nebula', 'planet', 'magnetar', 'giant_star', 'supermassive_star', 
-      'white_dwarf', 'comet', 'supernova'
-    ];
+    const numStars = 600; 
+    const numArms = flavor === 'Chaotic' ? 1 : 4;
+    const galaxyRadius = 4500;
+    
+    // Use the event horizon radius from the core for the Paczyński–Wiita potential
+    const Rs = core.eventHorizonRadius || 0;
 
-    // Speed of light squared from Particle.ts for Rs calculation
-    const C_SQUARED = 5e7;
-    const Rs = (2 * coreMass) / C_SQUARED;
-
-    for (let i = 0; i < numParticles; i++) {
-      const type = allTypes[Math.floor(Math.random() * allTypes.length)];
+    for (let i = 0; i < numStars; i++) {
       const arm = i % numArms;
       const baseAngle = (arm / numArms) * Math.PI * 2;
       
-      // Increased distance for better stability and "breathing room"
-      const distance = 300 + Math.pow(Math.random(), 1.3) * 1200;
-      const spiralTightness = 3.0;
-      const spiralAngle = baseAngle + (distance / 250) * spiralTightness + (Math.random() - 0.5) * 0.3;
+      // Distribution: Bulge + Disk
+      const isBulge = Math.random() > 0.7;
+      const distance = isBulge 
+        ? 100 + Math.random() * 800 
+        : 800 + Math.pow(Math.random(), 1.2) * (galaxyRadius - 800);
+
+      const spiralTightness = flavor === 'Chaotic' ? 0.8 : 4.5;
+      const spiralAngle = baseAngle + (distance / 600) * spiralTightness + (Math.random() - 0.5) * 0.4;
       
       const x = centerX + distance * Math.cos(spiralAngle);
       const y = centerY + distance * Math.sin(spiralAngle);
       
-      // Orbital velocity considering the Paczyński–Wiita potential for black holes:
-      // F = GM / (r - Rs)^2. For circular orbit: v^2 / r = GM / (r - Rs)^2
-      // v = sqrt(G * M * r) / (r - Rs)
-      const orbitalSpeed = Math.sqrt(G * coreMass * distance) / (distance - Rs);
+      const simCoreMass = coreMass * (1e7 / 1.989e30);
       
-      const vx = -orbitalSpeed * Math.sin(spiralAngle);
-      const vy = orbitalSpeed * Math.cos(spiralAngle);
+      // Paczyński–Wiita orbital velocity: v = sqrt(GM*r) / (r - Rs)
+      // We add a small epsilon to distance to prevent singularity
+      const effectiveDist = Math.max(distance, Rs * 1.5 + 20);
+      let orbitalSpeed = Math.sqrt(G * simCoreMass * effectiveDist) / (effectiveDist - Rs);
       
-      let mass = 100 + Math.random() * 1000;
-      if (type === 'neutron' || type === 'pulsar') mass = 5000 + Math.random() * 5000;
-      if (type === 'nebula') mass = 20000;
-      if (type === 'quasar') mass = 100000;
-      if (type === 'planet') mass = 10 + Math.random() * 100;
+      // Add a tiny bit of random dispersion for stability (prevents perfect resonance)
+      orbitalSpeed *= (0.99 + Math.random() * 0.02);
 
-      const p = new Particle(mass, x, y, vx, vy, type, '');
+      // Retrograde orbits for some stars in Chaotic flavor
+      const isRetrograde = flavor === 'Chaotic' && Math.random() > 0.8;
+      const dir = isRetrograde ? -1 : 1;
       
-      if (type === 'matter') {
-        const r = 200 + Math.random() * 55;
-        const g = 180 + Math.random() * 75;
-        const b = 150 + Math.random() * 105;
-        p.color = { 0: r, 1: g, 2: b }; 
+      const vx = -dir * orbitalSpeed * Math.sin(spiralAngle);
+      const vy = dir * orbitalSpeed * Math.cos(spiralAngle);
+      
+      let type: ParticleType = 'matter';
+      let mass = 1.989e30 * (0.1 + Math.random() * 2);
+      let name = isRetrograde ? 'Retro Star' : 'Star';
+      let density = 1.41;
+      let diameter = 1392700;
+      let color: Color = { 0: 255, 1: 255, 2: 255 };
+
+      if (flavor === 'Antimatter') {
+        type = 'antimatter';
+        color = { 0: 150, 1: 100, 2: 255 };
+      } else if (flavor === 'DarkMatter' && Math.random() > 0.5) {
+        type = 'dark';
+        color = { 0: 50, 1: 50, 2: 70 };
+      } else {
+        // Diverse selection for Standard and others
+        const rand = Math.random();
+        if (distance < 600) {
+          // Bulge: Older, redder stars
+          if (rand > 0.4) {
+            type = 'red_dwarf';
+            color = { 0: 255, 1: 100, 2: 50 };
+            name = 'Old Dwarf';
+          } else if (rand > 0.1) {
+            type = 'white_dwarf';
+            color = { 0: 200, 1: 230, 2: 255 };
+            name = 'White Dwarf';
+          } else {
+            type = 'neutron_star';
+            color = { 0: 150, 1: 200, 2: 255 };
+            name = 'Neutron Star';
+          }
+        } else {
+          // Arms: Younger, more diverse
+          if (rand > 0.95) {
+            type = 'blue_giant';
+            mass = 1.989e30 * (15 + Math.random() * 60);
+            color = { 0: 100, 1: 200, 2: 255 };
+            density = 0.05;
+            diameter = 8000000;
+            name = 'Young Giant';
+          } else if (rand > 0.92) {
+            type = 'pulsar';
+            mass = 1.989e30 * 1.4;
+            color = { 0: 255, 1: 255, 2: 255 };
+            name = 'Pulsar';
+          } else if (rand > 0.89) {
+            type = 'magnetar';
+            mass = 1.989e30 * 1.5;
+            color = { 0: 255, 1: 150, 2: 255 };
+            name = 'Magnetar';
+          } else if (rand > 0.85) {
+            type = 'planet';
+            mass = 5.972e24 * (1 + Math.random() * 300); // Earth to Jupiter mass
+            color = { 0: 100, 1: 150, 2: 200 };
+            name = 'Exoplanet';
+          } else if (rand > 0.82) {
+            type = 'asteroid';
+            mass = 1e18 * (1 + Math.random() * 1000);
+            color = { 0: 150, 1: 150, 2: 150 };
+            name = 'Asteroid';
+          } else if (rand > 0.80) {
+            type = 'comet';
+            mass = 1e15;
+            color = { 0: 200, 1: 230, 2: 255 };
+            name = 'Comet';
+          } else if (rand > 0.75) {
+            type = 'giant_star';
+            mass = 5 * 1.989e30;
+            color = { 0: 255, 1: 150, 2: 100 };
+            name = 'Red Giant';
+          } else {
+            type = 'sun';
+            mass = 1.989e30;
+            color = { 0: 255, 1: 255, 2: 200 };
+            name = 'Yellow Star';
+          }
+        }
       }
-      
-      const r = p.color[0];
-      const g = p.color[1];
-      const b = p.color[2];
-      p.color[3] = ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
 
-      engine.addParticle(p);
+      engine.addParticle(new Particle(mass, x, y, vx, vy, type, name, density, color, diameter));
+    }
+    
+    // Add some random Nebulae
+    for (let i = 0; i < 15; i++) {
+      const dist = 500 + Math.random() * galaxyRadius;
+      const ang = Math.random() * Math.PI * 2;
+      engine.addParticle(new Particle(1e32, centerX + dist * Math.cos(ang), centerY + dist * Math.sin(ang), 0, 0, 'nebula', 'Gas Cloud', 0.0001, {0:255,1:100,2:255}, 1e8));
     }
   };
 
@@ -1476,59 +1774,80 @@ export default function App() {
     const cx = (window.innerWidth / 2 - pan.x) / zoom;
     const cy = (window.innerHeight / 2 - pan.y) / zoom;
 
-    // Solar mass as base: 10^7
-    const sunMass = 1e7;
-    const sun = new Particle(sunMass, cx, cy, 0, 0, 'matter', 'Sun', 1.41, { 0: 255, 1: 215, 2: 0 });
+    // Solar mass as base: 1.989e30 kg
+    const sunPreset = STAR_PRESETS['sun'];
+    const sun = new Particle(
+      sunPreset.mass, 
+      cx, cy, 0, 0, 
+      sunPreset.type, 
+      sunPreset.name, 
+      sunPreset.density, 
+      hexToColor(sunPreset.color),
+      sunPreset.diameter
+    );
     engine.addParticle(sun);
 
     // 1 AU based on simulation constants for consistency with scale bar
     const au = AU_IN_SIM_UNITS;
     
     const planets = [
-      { name: 'Mercury', dist: 0.387 * au, mass: 1.66, density: 5.43, color: { 0: 165, 1: 165, 2: 165 }, moons: [] },
-      { name: 'Venus', dist: 0.723 * au, mass: 24.48, density: 5.24, color: { 0: 227, 1: 187, 2: 118 }, moons: [] },
-      { name: 'Earth', dist: 1.000 * au, mass: 30.04, density: 5.51, color: { 0: 34, 1: 113, 2: 179 }, moons: [{ name: 'Moon', dist: 42, mass: 0.37, color: { 0: 200, 1: 200, 2: 200 } }] },
-      { name: 'Mars', dist: 1.524 * au, mass: 3.21, density: 3.93, color: { 0: 226, 1: 123, 2: 88 }, moons: [{ name: 'Phobos', dist: 5, mass: 0.001, color: { 0: 150, 1: 150, 2: 150 } }, { name: 'Deimos', dist: 8, mass: 0.001, color: { 0: 130, 1: 130, 2: 130 } }] },
-      { name: 'Jupiter', dist: 5.203 * au, mass: 9545, density: 1.33, color: { 0: 211, 1: 156, 2: 126 }, moons: [{ name: 'Io', dist: 46, mass: 0.45, color: { 0: 255, 1: 255, 2: 0 } }, { name: 'Europa', dist: 72, mass: 0.24, color: { 0: 240, 1: 240, 2: 240 } }, { name: 'Ganymede', dist: 117, mass: 0.75, color: { 0: 180, 1: 180, 2: 180 } }, { name: 'Callisto', dist: 206, mass: 0.54, color: { 0: 140, 1: 140, 2: 140 } }] },
-      { name: 'Saturn', dist: 9.537 * au, mass: 2859, density: 0.69, color: { 0: 197, 1: 171, 2: 110 }, moons: [{ name: 'Titan', dist: 132, mass: 0.67, color: { 0: 255, 1: 200, 2: 0 } }] },
-      { name: 'Uranus', dist: 19.191 * au, mass: 435, density: 1.27, color: { 0: 187, 1: 225, 2: 228 }, moons: [] },
-      { name: 'Neptune', dist: 30.069 * au, mass: 514, density: 1.64, color: { 0: 96, 1: 129, 2: 255 }, moons: [{ name: 'Triton', dist: 38, mass: 0.11, color: { 0: 200, 1: 220, 2: 255 } }] },
-      { name: 'Pluto', dist: 39.482 * au, mass: 0.065, density: 1.86, color: { 0: 255, 1: 218, 2: 185 }, moons: [{ name: 'Charon', dist: 10, mass: 0.008, color: { 0: 180, 1: 180, 2: 180 } }] },
+      { key: 'mercury', dist: 0.387 * au },
+      { key: 'venus', dist: 0.723 * au },
+      { key: 'earth', dist: 1.000 * au, moons: [{ key: 'moon', dist: 42 }] },
+      { key: 'mars', dist: 1.524 * au, moons: [{ key: 'phobos', dist: 5 }, { key: 'deimos', dist: 8 }] },
+      { key: 'jupiter', dist: 5.203 * au, moons: [{ key: 'io', dist: 46 }, { key: 'europa', dist: 72 }, { key: 'ganymede', dist: 117 }, { key: 'callisto', dist: 206 }] },
+      { key: 'saturn', dist: 9.537 * au, moons: [{ key: 'titan', dist: 132 }] },
+      { key: 'uranus', dist: 19.191 * au, moons: [] },
+      { key: 'neptune', dist: 30.069 * au, moons: [{ key: 'triton', dist: 38 }] },
+      { key: 'pluto', dist: 39.482 * au, moons: [{ key: 'charon', dist: 10 }] },
     ];
 
-    planets.forEach(p => {
+    planets.forEach(pData => {
+      const p = STAR_PRESETS[pData.key];
       const angle = Math.random() * Math.PI * 2;
-      const x = cx + p.dist * Math.cos(angle);
-      const y = cy + p.dist * Math.sin(angle);
-      const speed = Math.sqrt((G * sunMass) / p.dist);
+      const x = cx + pData.dist * Math.cos(angle);
+      const y = cy + pData.dist * Math.sin(angle);
+      const speed = Math.sqrt((G * sun.mass) / pData.dist);
       const vx = -speed * Math.sin(angle);
       const vy = speed * Math.cos(angle);
-      const planet = new Particle(p.mass, x, y, vx, vy, 'planet', p.name, p.density, p.color as unknown as Color);
+      const planet = new Particle(p.mass, x, y, vx, vy, p.type, p.name, p.density, hexToColor(p.color), p.diameter);
       engine.addParticle(planet);
 
       // Add Moons
-      p.moons.forEach(m => {
-        const mAngle = Math.random() * Math.PI * 2;
-        const mx = x + m.dist * Math.cos(mAngle);
-        const my = y + m.dist * Math.sin(mAngle);
-        const mSpeed = Math.sqrt((G * p.mass) / m.dist);
-        const mvx = vx - mSpeed * Math.sin(mAngle);
-        const mvy = vy + mSpeed * Math.cos(mAngle);
-        const moon = new Particle(m.mass, mx, my, mvx, mvy, 'planet', m.name, 3, m.color as unknown as Color);
-        engine.addParticle(moon);
-      });
+      if (pData.moons) {
+        pData.moons.forEach(mData => {
+          const m = STAR_PRESETS[mData.key];
+          const mAngle = Math.random() * Math.PI * 2;
+          const mx = x + mData.dist * Math.cos(mAngle);
+          const my = y + mData.dist * Math.sin(mAngle);
+          const mSpeed = Math.sqrt((G * planet.mass) / mData.dist);
+          const mvx = vx - mSpeed * Math.sin(mAngle);
+          const mvy = vy + mSpeed * Math.cos(mAngle);
+          const moon = new Particle(m.mass, mx, my, mvx, mvy, m.type, m.name, m.density, hexToColor(m.color), m.diameter);
+          engine.addParticle(moon);
+        });
+      }
     });
 
     // Asteroid Belt (between Mars and Jupiter)
+    const asteroidPreset = STAR_PRESETS['asteroid'];
     for (let i = 0; i < 300; i++) {
       const dist = (2.2 + Math.random() * 1.0) * au;
       const angle = Math.random() * Math.PI * 2;
       const x = cx + dist * Math.cos(angle);
       const y = cy + dist * Math.sin(angle);
-      const speed = Math.sqrt((G * sunMass) / dist) * (0.98 + Math.random() * 0.04);
+      const speed = Math.sqrt((G * sun.mass) / dist) * (0.98 + Math.random() * 0.04);
       const vx = -speed * Math.sin(angle);
       const vy = speed * Math.cos(angle);
-      const asteroid = new Particle(0.001 + Math.random() * 0.01, x, y, vx, vy, 'matter', '', 5, { 0: 100, 1: 100, 2: 100 });
+      const asteroid = new Particle(
+        asteroidPreset.mass * (0.5 + Math.random()), 
+        x, y, vx, vy, 
+        asteroidPreset.type, 
+        '', 
+        asteroidPreset.density, 
+        hexToColor(asteroidPreset.color),
+        asteroidPreset.diameter * (0.5 + Math.random())
+      );
       engine.addParticle(asteroid);
     }
 
@@ -1538,134 +1857,76 @@ export default function App() {
   };
 
   const generateBinary = () => {
-    engine.clear();
     const cx = (window.innerWidth / 2 - pan.x) / zoom;
     const cy = (window.innerHeight / 2 - pan.y) / zoom;
     engine.runExperiment('binary_system_chaos', cx, cy);
   };
 
   const generateFigureAndOrbit = () => {
-    engine.clear();
     const cx = (window.innerWidth / 2 - pan.x) / zoom;
     const cy = (window.innerHeight / 2 - pan.y) / zoom;
     
-    // Random central object
-    const centralSpecs = [
-      { type: 'matter' as ParticleType, mass: 1e7, name: 'Yellow Star', color: { 0: 255, 1: 215, 2: 0 }, density: 1.41 },
-      { type: 'giant_star' as ParticleType, mass: 3e7, name: 'Red Giant', color: { 0: 255, 1: 99, 2: 71 }, density: 0.001 },
-      { type: 'supermassive_star' as ParticleType, mass: 1e8, name: 'Blue Hypergiant', color: { 0: 150, 1: 200, 2: 255 }, density: 0.1 },
-      { type: 'blackhole' as ParticleType, mass: 5e7, name: 'Singularity', color: { 0: 20, 1: 20, 2: 20 }, density: 10000 },
-      { type: 'neutron' as ParticleType, mass: 1.5e7, name: 'Neutron Star', color: { 0: 173, 1: 216, 2: 230 }, density: 1e12 },
-      { type: 'white_dwarf' as ParticleType, mass: 9e6, name: 'White Dwarf', color: { 0: 240, 1: 248, 2: 255 }, density: 1e6 },
-      { type: 'quasar' as ParticleType, mass: 2e8, name: 'Active Quasar', color: { 0: 255, 1: 255, 2: 200 }, density: 1000 }
-    ];
-    
-    const spec = centralSpecs[Math.floor(Math.random() * centralSpecs.length)];
-    const central = new Particle(spec.mass, cx, cy, 0, 0, spec.type, spec.name, spec.density, spec.color);
-    engine.addParticle(central);
+    const flavors = ['Figure8', 'Chaotic', 'Exotic', 'Butterfly'] as const;
+    const flavor = flavors[Math.floor(Math.random() * flavors.length)];
 
-    const scaleFactor = 33;
-    const numPlanets = 5 + Math.floor(Math.random() * 10);
-    
-    // Distance ranges based on Solar System (Mercury to Pluto scale)
-    const minD = 190 * scaleFactor;
-    const maxD = 18000 * scaleFactor;
+    if (flavor === 'Figure8' || flavor === 'Exotic') {
+      // The "Figure-8" 3-Body Solution
+      const m = 5 * 1.989e30; 
+      const simM = m * (1e7 / 1.989e30);
+      
+      const x1 = 0.97000436;
+      const y1 = -0.24308753;
+      const vx1 = 0.466203685;
+      const vy1 = 0.43236573;
+      
+      const scale = 200;
+      const vScale = Math.sqrt((G * simM) / scale);
 
-    for (let i = 0; i < numPlanets; i++) {
-      // Logarithmic-ish distribution for planets
-      const dist = minD * Math.pow(maxD / minD, i / (numPlanets - 1)) * (0.8 + Math.random() * 0.4);
+      const type3 = flavor === 'Exotic' ? 'antimatter' : 'matter';
+      const name3 = flavor === 'Exotic' ? 'Anti-Gamma' : 'Gamma';
+      const color3 = flavor === 'Exotic' ? {0:100,1:50,2:255} : {0:255,1:215,2:0};
+
+      engine.addParticle(new Particle(m, cx + x1 * scale, cy + y1 * scale, vx1 * vScale, vy1 * vScale, 'supermassive_star', 'Alpha', 0.1, {0:100,1:200,2:255}, 5000000));
+      engine.addParticle(new Particle(m, cx - x1 * scale, cy - y1 * scale, vx1 * vScale, vy1 * vScale, 'giant_star', 'Beta', 0.001, {0:255,1:100,2:50}, 100000000));
+      engine.addParticle(new Particle(m, cx, cy, -2 * vx1 * vScale, -2 * vy1 * vScale, type3, name3, 1.41, color3, 1392700));
+    } else if (flavor === 'Butterfly') {
+      // Butterfly 3-Body Solution (Another stable periodic orbit)
+      const m = 10 * 1.989e30;
+      const simM = m * (1e7 / 1.989e30);
+      const scale = 150;
+      const vScale = Math.sqrt((G * simM) / scale);
+
+      // Approximate Butterfly conditions
+      const x1 = 1.0; const y1 = 0.0;
+      const vx1 = 0.30689; const vy1 = 0.125501;
+
+      engine.addParticle(new Particle(m, cx + x1 * scale, cy + y1 * scale, vx1 * vScale, vy1 * vScale, 'neutron', 'Butterfly A', 5000, {0:180,1:220,2:255}, 20));
+      engine.addParticle(new Particle(m, cx - x1 * scale, cy - y1 * scale, vx1 * vScale, vy1 * vScale, 'neutron', 'Butterfly B', 5000, {0:180,1:220,2:255}, 20));
+      engine.addParticle(new Particle(m, cx, cy, -2 * vx1 * vScale, -2 * vy1 * vScale, 'pulsar', 'Butterfly C', 5000, {0:255,1:255,2:255}, 20));
+    } else {
+      // Chaotic 3-Body
+      for (let i = 0; i < 3; i++) {
+        const dist = 300;
+        const ang = (i / 3) * Math.PI * 2;
+        const m = (5 + Math.random() * 15) * 1.989e30;
+        const simM = m * (1e7 / 1.989e30);
+        const v = Math.sqrt((G * simM) / dist) * 0.5;
+        engine.addParticle(new Particle(m, cx + dist * Math.cos(ang), cy + dist * Math.sin(ang), -v * Math.sin(ang), v * Math.cos(ang), 'blackhole', `Chaos ${i+1}`, 10000, {0:20,1:20,2:20}, 30));
+      }
+    }
+
+    // Add some "Orbiters" (planets) far away to see the complex gravity field
+    for (let i = 0; i < 8; i++) {
+      const dist = 1500 + Math.random() * 2000;
       const angle = Math.random() * Math.PI * 2;
-      const x = cx + dist * Math.cos(angle);
-      const y = cy + dist * Math.sin(angle);
-      
-      // Random orbital direction (Prograde vs Retrograde)
-      const isRetrograde = Math.random() > 0.85; // 15% chance for retrograde planets
-      const dir = isRetrograde ? -1 : 1;
-      
-      // Varying eccentricity (0.8 to 1.1 of circular velocity)
-      const ecc = 0.85 + Math.random() * 0.25;
-      const speed = ecc * Math.sqrt((G * spec.mass) / dist);
-      const vx = -dir * speed * Math.sin(angle);
-      const vy = dir * speed * Math.cos(angle);
-      
-      const pMass = 0.1 + Math.pow(Math.random(), 3) * 12000;
-      const pColor = { 
-        0: 80 + Math.random() * 175, 
-        1: 80 + Math.random() * 175, 
-        2: 80 + Math.random() * 175 
-      };
-      
-      const pName = `${isRetrograde ? 'Retro ' : ''}Planet ${i+1}`;
-      const planet = new Particle(pMass, x, y, vx, vy, 'planet', pName, 1 + Math.random() * 4, pColor as any);
-      engine.addParticle(planet);
-
-      // Random Moons
-      const numMoons = Math.floor(Math.random() * 5);
-      for (let j = 0; j < numMoons; j++) {
-        const mDist = 15 + Math.random() * 180;
-        const mAngle = Math.random() * Math.PI * 2;
-        const mx = x + mDist * Math.cos(mAngle);
-        const my = y + mDist * Math.sin(mAngle);
-        
-        // Moons can also be retrograde relative to their planet
-        const mRetro = Math.random() > 0.8;
-        const mDir = mRetro ? -1 : 1;
-        
-        const mSpeed = Math.sqrt((G * pMass) / mDist) * (0.9 + Math.random() * 0.2);
-        const mvx = vx - mDir * mSpeed * Math.sin(mAngle);
-        const mvy = vy + mDir * mSpeed * Math.cos(mAngle);
-        const mMass = 0.01 + Math.random() * 1.5;
-        const moon = new Particle(mMass, mx, my, mvx, mvy, 'planet', `${mRetro ? 'Retro ' : ''}Moon ${i+1}-${j+1}`, 3, { 0: 180, 1: 180, 2: 180 });
-        engine.addParticle(moon);
-      }
+      const isRetro = Math.random() > 0.5;
+      const dir = isRetro ? -1 : 1;
+      const orbitalSpeed = Math.sqrt((G * 1e8 * 3) / dist); // Approx speed
+      engine.addParticle(new Particle(5.972e24, cx + dist * Math.cos(angle), cy + dist * Math.sin(angle), -dir * orbitalSpeed * Math.sin(angle), dir * orbitalSpeed * Math.cos(angle), 'planet', isRetro ? 'Retro Planet' : 'Planet', 5.51, {0:100,1:150,2:255}, 12742));
     }
 
-    // Multiple Random Asteroid Belts at different scales
-    const numBelts = 1 + Math.floor(Math.random() * 3);
-    for (let b = 0; b < numBelts; b++) {
-      const beltDist = (800 + Math.random() * 12000) * scaleFactor;
-      const beltWidth = (200 + Math.random() * 800) * scaleFactor;
-      const beltRetro = Math.random() > 0.9;
-      const bDir = beltRetro ? -1 : 1;
-      const beltCount = 100 + Math.floor(Math.random() * 200);
-      
-      for (let i = 0; i < beltCount; i++) {
-        const d = beltDist + (Math.random() - 0.5) * beltWidth;
-        const a = Math.random() * Math.PI * 2;
-        const ax = cx + d * Math.cos(a);
-        const ay = cy + d * Math.sin(a);
-        const aspeed = Math.sqrt((G * spec.mass) / d) * (0.95 + Math.random() * 0.1);
-        const avx = -bDir * aspeed * Math.sin(a);
-        const avy = bDir * aspeed * Math.cos(a);
-        
-        // Different scales of asteroid sizes
-        const aMass = (0.001 + Math.pow(Math.random(), 4) * 0.5);
-        const asteroid = new Particle(aMass, ax, ay, avx, avy, 'matter', '', 5, { 0: 110, 1: 110, 2: 110 });
-        engine.addParticle(asteroid);
-      }
-    }
-
-    // Diverse Comets
-    const numComets = 4 + Math.floor(Math.random() * 8);
-    for (let i = 0; i < numComets; i++) {
-      const d = (10000 + Math.random() * 20000) * scaleFactor;
-      const a = Math.random() * Math.PI * 2;
-      const cx_pos = cx + d * Math.cos(a);
-      const cy_pos = cy + d * Math.sin(a);
-      
-      const cRetro = Math.random() > 0.5; // Comets are often retrograde
-      const cDir = cRetro ? -1 : 1;
-      
-      // Highly elliptical orbit velocity
-      const cspeed = Math.sqrt((G * spec.mass) / d) * (0.3 + Math.random() * 0.5);
-      const cvx = -cDir * cspeed * Math.sin(a + (Math.random() - 0.5));
-      const cvy = cDir * cspeed * Math.cos(a + (Math.random() - 0.5));
-      const comet = new Particle(0.01 + Math.random() * 0.1, cx_pos, cy_pos, cvx, cvy, 'comet', `${cRetro ? 'Retro ' : ''}Comet ${i+1}`, 1, { 0: 180, 1: 220, 2: 255 });
-      engine.addParticle(comet);
-    }
-    
-    setZoom(0.004);
-    setPan({ x: window.innerWidth / 2 - cx * 0.004, y: window.innerHeight / 2 - cy * 0.004 });
+    setZoom(0.001);
+    setFollowSelected(false);
   };
 
   const handleExperimentSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -1676,6 +1937,31 @@ export default function App() {
       engine.runExperiment(id, cx, cy);
       // Reset selector so the same experiment can be added again
       setSelectedExperiment('');
+    }
+  };
+
+  const handleScenarioSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value;
+    if (id) {
+      engine.clear();
+      setSimulationTime(0);
+      startDateRef.current = new Date();
+      const cx = (window.innerWidth / 2 - pan.x) / zoom;
+      const cy = (window.innerHeight / 2 - pan.y) / zoom;
+      engine.runExperiment(id, cx, cy);
+      
+      if (id === 'artemis_2') {
+        setZoom(3);
+        setPan({ x: window.innerWidth / 2 - cx * 3, y: window.innerHeight / 2 - cy * 3 });
+        setShowMobileControls(true);
+        const newH = 0.014; // 7x speed (0.002 * 7)
+        engine.h = newH;
+        setSimSpeed(newH);
+        setShowOrbits(true);
+        setShowNames(true);
+      }
+      
+      setSelectedScenario('');
     }
   };
 
@@ -1701,6 +1987,7 @@ export default function App() {
       setParticleType(preset.type);
       setNewMass(preset.mass);
       setNewDensity(preset.density);
+      setNewDiameter(preset.diameter);
       setParticleName(preset.name);
       setNewColor(preset.color);
     }
@@ -1863,7 +2150,7 @@ export default function App() {
 
           <div className="flex-1 overflow-y-auto retro-scrollbar flex flex-col gap-1 pr-1 max-h-[260px]">
             {engine.particles
-              .filter(p => p.name.toLowerCase().includes(particleSearch.toLowerCase()) || p.type.toLowerCase().includes(particleSearch.toLowerCase()))
+              .filter(p => p.type !== 'reference_point' && (p.name.toLowerCase().includes(particleSearch.toLowerCase()) || p.type.toLowerCase().includes(particleSearch.toLowerCase())))
               .sort((a, b) => b.mass - a.mass)
               .map(p => (
                 <div 
@@ -1934,6 +2221,52 @@ export default function App() {
 
                   {selectedParticleId === p.id && (
                     <div className="mt-2 pt-2 border-t border-white/10 flex flex-col gap-1">
+                      <div className="flex flex-col gap-1 mb-2">
+                        <span className="text-[8px] uppercase opacity-60">Mass (kg):</span>
+                        <input 
+                          type="number"
+                          defaultValue={p.realMass}
+                          onBlur={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val)) {
+                              p.realMass = val;
+                              const MASS_SCALE = 1e7 / 1.989e30;
+                              p.mass = val * MASS_SCALE;
+                            }
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="retro-input text-[9px] w-full py-0.5 bg-black/50"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between mt-1 mb-1">
+                        <span className="text-[8px] uppercase opacity-60">Maneuver:</span>
+                        <div className="flex gap-1">
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const angle = Math.atan2(p.vy, p.vx);
+                              p.thrust = { ax: Math.cos(angle) * 20, ay: Math.sin(angle) * 20, duration: 1.0 };
+                            }}
+                            className="p-1 rounded bg-orange-500/20 border border-orange-500/50 text-orange-400 hover:bg-orange-500/30 flex items-center gap-1"
+                            title="Accelerate (Prograde)"
+                          >
+                            <ArrowUp size={10} />
+                            <span className="text-[7px]">ACCEL</span>
+                          </button>
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const angle = Math.atan2(p.vy, p.vx);
+                              p.thrust = { ax: -Math.cos(angle) * 20, ay: -Math.sin(angle) * 20, duration: 1.0 };
+                            }}
+                            className="p-1 rounded bg-cyan-500/20 border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/30 flex items-center gap-1"
+                            title="Decelerate (Retrograde)"
+                          >
+                            <ArrowDown size={10} />
+                            <span className="text-[7px]">DECEL</span>
+                          </button>
+                        </div>
+                      </div>
                       <div className="flex items-center justify-between">
                         <span className="text-[8px] uppercase opacity-60">Add Orbiter:</span>
                         <button 
@@ -2151,7 +2484,8 @@ export default function App() {
                                           particleType, 
                                           `${p.name} ${point}`, 
                                           newDensity, 
-                                          hexToColor(newColor)
+                                          hexToColor(newColor),
+                                          newDiameter
                                         );
                                         engine.addParticle(newP);
                                         setParticleCount(engine.particles.length);
@@ -2185,8 +2519,8 @@ export default function App() {
           <div className="flex flex-col items-center gap-1 mb-4 pb-2 border-b border-white/10">
             <h1 className="text-xs font-bold tracking-[0.2em] text-cyan-400/80">GRAVITY TOY</h1>
             <div className="flex items-center gap-2">
-              <span className={`font-bold text-[9px] tracking-widest ${rulerEnabled ? 'text-yellow-400 animate-pulse' : 'text-green-400'}`}>
-                {rulerEnabled ? 'RULER MODE ACTIVE' : 'Sim Active'}
+              <span className={`font-bold text-[9px] tracking-widest ${rulerEnabled || orbitPlannerEnabled ? 'text-yellow-400 animate-pulse' : 'text-green-400'}`}>
+                {rulerEnabled ? 'RULER MODE ACTIVE' : orbitPlannerEnabled ? 'ORBIT PLANNER ACTIVE' : 'Sim Active'}
               </span>
             </div>
             <div className="flex flex-wrap gap-1 justify-center items-center mt-1">
@@ -2219,6 +2553,51 @@ export default function App() {
               >
                 {accessibilityMode ? 'ACCESSIBILITY ON' : 'Accessibility'}
               </button>
+
+              <button 
+                onClick={() => setOrbitTracerEnabled(!orbitTracerEnabled)}
+                className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-all duration-200 ${
+                  orbitTracerEnabled 
+                    ? 'bg-purple-500/30 border-purple-500 text-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.3)]' 
+                    : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10 hover:border-white/40'
+                }`}
+                title="Project future orbit of selected particle"
+              >
+                {orbitTracerEnabled ? 'TRACER ON' : 'Orbit Tracer'}
+              </button>
+
+              <button 
+                onClick={() => {
+                  setOrbitPlannerEnabled(!orbitPlannerEnabled);
+                  if (!orbitPlannerEnabled) {
+                    setRulerEnabled(false);
+                    setAccessibilityMode(false);
+                  }
+                }}
+                className={`px-2 py-0.5 rounded text-[9px] font-bold border transition-all duration-200 ${
+                  orbitPlannerEnabled 
+                    ? 'bg-orange-500/30 border-orange-500 text-orange-400 shadow-[0_0_10px_rgba(249,115,22,0.3)]' 
+                    : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10 hover:border-white/40'
+                }`}
+                title="Plan orbits without creating particles (like Ruler Mode)"
+              >
+                {orbitPlannerEnabled ? 'PLANNER ON' : 'Orbit Planner'}
+              </button>
+
+              {plannedOrbits.length > 0 && (
+                <button 
+                  onClick={() => setPlannedOrbits([])}
+                  className="px-2 py-0.5 rounded text-[9px] font-bold border bg-red-500/20 border-red-500/50 text-red-400 hover:bg-red-500/30"
+                >
+                  Clear Plans
+                </button>
+              )}
+
+              {orbitPlannerEnabled && (
+                <div className="w-full text-[8px] text-orange-400/70 text-center mt-1 italic">
+                  Click & drag to map potential orbits
+                </div>
+              )}
               
               {rulerEnabled && (
                 <div className="flex items-center gap-1 bg-black/40 p-0.5 rounded border border-white/10">
@@ -2459,6 +2838,28 @@ export default function App() {
               {savedSystems.length === 0 && (
                 <div className="text-[9px] opacity-40 italic text-center py-1">No saved systems</div>
               )}
+            </div>
+          </div>
+
+          <div className="section-title">Mission Scenarios</div>
+          <div className="flex flex-col gap-1 mb-2">
+            <select 
+              value={selectedScenario} 
+              onChange={handleScenarioSelect}
+              className="retro-select w-full"
+            >
+              <option value="">-- Select Scenario --</option>
+              <option value="artemis_2">Artemis II (Free Return)</option>
+            </select>
+            <div className="flex items-center gap-2 mt-1">
+              <input 
+                type="checkbox" 
+                id="showRefTraj" 
+                checked={showReferenceTrajectory} 
+                onChange={(e) => setShowReferenceTrajectory(e.target.checked)}
+                className="retro-checkbox"
+              />
+              <label htmlFor="showRefTraj" className="text-[9px] uppercase opacity-70 cursor-pointer">Show Ref. Trajectory</label>
             </div>
           </div>
 

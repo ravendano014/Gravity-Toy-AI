@@ -31,6 +31,163 @@ export class GravityEngine {
     }
   }
 
+  getAccelerationAt(x: number, y: number, p: Particle): { ax: number, ay: number } {
+    let ax = 0;
+    let ay = 0;
+
+    for (const other of this.particles) {
+      if (other === p || other.type === 'reference_point') continue;
+      const dx = other.x - x;
+      const dy = other.y - y;
+      const distSq = dx * dx + dy * dy;
+      const dist = Math.sqrt(distSq);
+      if (dist < 0.001) continue;
+
+      let force = 0;
+      const scaledDist = dist / 100;
+
+      switch (this.gravityMode) {
+        case 'inverseSquare':
+          const softening = (p.radius + other.radius) * 0.05;
+          force = (this.G * other.mass) / (distSq + softening * softening);
+          break;
+        case 'exponential':
+          force = this.G * other.mass * Math.exp(-scaledDist);
+          break;
+        case 'arctanSquared':
+          const arctanDist = Math.atan(scaledDist);
+          force = (this.G * other.mass) / (arctanDist * arctanDist);
+          break;
+        case 'sechSquared':
+          force = this.G * other.mass * Math.pow(this.sech(scaledDist), 2);
+          break;
+        case 'sech':
+          force = this.G * other.mass * this.sech(scaledDist);
+          break;
+      }
+
+      ax += (force * dx) / dist;
+      ay += (force * dy) / dist;
+
+      // Radiation Pressure (simplified for projection)
+      const starTypes = ['matter', 'giant_star', 'supermassive_star', 'white_dwarf'];
+      if (starTypes.includes(other.type) && other.mass > 1e5) {
+        const relMass = other.mass / 1e7;
+        const luminosity = relMass < 10 ? Math.pow(relMass, 3.5) * 5e6 : Math.pow(10, 3.5) * 5e6 * (relMass / 10);
+        const radPressure = (luminosity / (4 * Math.PI * distSq)) * 0.1;
+        ax -= (radPressure * dx) / dist;
+        ay -= (radPressure * dy) / dist;
+      }
+    }
+
+    return { ax, ay };
+  }
+
+  projectOrbit(p: Particle, steps: number = 1000): {
+    path: {x: number, y: number, collided?: boolean, time: number, isPeriapsis?: boolean, isApoapsis?: boolean}[],
+    periapsis?: { dist: number, time: number, bodyName: string },
+    apoapsis?: { dist: number, time: number, bodyName: string }
+  } {
+    const path: {x: number, y: number, collided?: boolean, time: number, isPeriapsis?: boolean, isApoapsis?: boolean}[] = [];
+    let curX = p.x;
+    let curY = p.y;
+    let curVx = p.vx;
+    let curVy = p.vy;
+    let curTime = 0;
+    
+    const dominant = this.getDominantSource(p);
+    let lastDist = dominant ? Math.sqrt(Math.pow(curX - dominant.x, 2) + Math.pow(curY - dominant.y, 2)) : 0;
+    let trend: 'closing' | 'receding' | 'stable' = 'stable';
+    
+    let minObservedDist = Infinity;
+    let maxObservedDist = -Infinity;
+    let periapsisPoint: any = null;
+    let apoapsisPoint: any = null;
+
+    for (let i = 0; i < steps; i++) {
+      // Adaptive time step: smaller steps when acceleration is high
+      const accel = this.getAccelerationAt(curX, curY, p);
+      const accelMag = Math.sqrt(accel.ax * accel.ax + accel.ay * accel.ay);
+      // baseDt scales inversely with acceleration, but clamped
+      const dt = Math.max(this.h * 0.5, Math.min(this.h * 10, 0.5 / (accelMag + 0.01)));
+      
+      // RK4 Integration
+      const k1v = accel;
+      const k1x = { vx: curVx, vy: curVy };
+
+      const k2v = this.getAccelerationAt(curX + k1x.vx * dt * 0.5, curY + k1x.vy * dt * 0.5, p);
+      const k2x = { vx: curVx + k1v.ax * dt * 0.5, vy: curVy + k1v.ay * dt * 0.5 };
+
+      const k3v = this.getAccelerationAt(curX + k2x.vx * dt * 0.5, curY + k2x.vy * dt * 0.5, p);
+      const k3x = { vx: curVx + k2v.ax * dt * 0.5, vy: curVy + k2v.ay * dt * 0.5 };
+
+      const k4v = this.getAccelerationAt(curX + k3x.vx * dt, curY + k3x.vy * dt, p);
+      const k4x = { vx: curVx + k3v.ax * dt, vy: curVy + k3v.ay * dt };
+
+      curVx += (dt / 6) * (k1v.ax + 2 * k2v.ax + 2 * k3v.ax + k4v.ax);
+      curVy += (dt / 6) * (k1v.ay + 2 * k2v.ay + 2 * k3v.ay + k4v.ay);
+      curX += (dt / 6) * (k1x.vx + 2 * k2x.vx + 2 * k3x.vx + k4x.vx);
+      curY += (dt / 6) * (k1x.vy + 2 * k2x.vy + 2 * k3x.vy + k4x.vy);
+      curTime += dt;
+
+      // Periapsis/Apoapsis detection relative to dominant body
+      let isPeriapsis = false;
+      let isApoapsis = false;
+      if (dominant) {
+        const dist = Math.sqrt(Math.pow(curX - dominant.x, 2) + Math.pow(curY - dominant.y, 2));
+        
+        if (dist < lastDist) {
+          if (trend === 'receding') {
+            // This shouldn't happen in a simple orbit unless multi-body
+          }
+          trend = 'closing';
+        } else if (dist > lastDist) {
+          if (trend === 'closing') {
+            // We just passed periapsis
+            isPeriapsis = true;
+            if (lastDist < minObservedDist) {
+              minObservedDist = lastDist;
+              periapsisPoint = { dist: lastDist, time: curTime - dt, bodyName: dominant.name };
+            }
+          }
+          trend = 'receding';
+        }
+        
+        // Track absolute max for apoapsis
+        if (dist > maxObservedDist) {
+          maxObservedDist = dist;
+          apoapsisPoint = { dist: dist, time: curTime, bodyName: dominant.name };
+        }
+        
+        lastDist = dist;
+      }
+
+      path.push({ x: curX, y: curY, time: curTime, isPeriapsis, isApoapsis });
+
+      // Collision detection
+      let collided = false;
+      for (const other of this.particles) {
+        if (other === p || other.type === 'reference_point') continue;
+        const dx = other.x - curX;
+        const dy = other.y - curY;
+        if (dx * dx + dy * dy < other.radius * other.radius) {
+          path[path.length - 1].collided = true;
+          collided = true;
+          break;
+        }
+      }
+      if (collided) break;
+
+      if (Math.abs(curX) > 100000 || Math.abs(curY) > 100000) break;
+    }
+
+    return { 
+      path, 
+      periapsis: periapsisPoint,
+      apoapsis: trend === 'closing' ? undefined : apoapsisPoint // Only return apoapsis if we are receding or finished
+    };
+  }
+
   getDominantSource(p: Particle): Particle | null {
     let dominantOther = null;
     let maxForceFactor = -1;
@@ -133,8 +290,28 @@ export class GravityEngine {
     // Calculate accelerations
     for (let i = 0; i < this.particles.length; i++) {
       const p1 = this.particles[i];
+      
+      // Reference points don't move or interact
+      if (p1.type === 'reference_point') {
+        p1.ax = 0;
+        p1.ay = 0;
+        continue;
+      }
+
       p1.ax = 0;
       p1.ay = 0;
+
+      // Apply thrust if active
+      if (p1.thrust && p1.thrust.duration > 0) {
+        p1.ax += p1.thrust.ax;
+        p1.ay += p1.thrust.ay;
+        p1.thrust.duration -= this.h;
+      }
+
+      // Custom update logic
+      if (p1.onUpdate) {
+        p1.onUpdate(p1, this.h);
+      }
 
       for (let j = 0; j < this.particles.length; j++) {
         if (i === j) continue;
@@ -274,7 +451,12 @@ export class GravityEngine {
       p.age += this.h;
 
       if (this.showOrbits) {
-        p.path.push({ x: p.x, y: p.y });
+        let thrustType: 'none' | 'accelerating' | 'decelerating' = 'none';
+        if (p.thrust) {
+          const dot = p.vx * p.thrust.ax + p.vy * p.thrust.ay;
+          thrustType = dot > 0 ? 'accelerating' : 'decelerating';
+        }
+        p.path.push({ x: p.x, y: p.y, thrustType });
         if (p.path.length > p.pathLength) {
           p.path.shift();
         }
@@ -298,6 +480,7 @@ export class GravityEngine {
       for (let j = i + 1; j < this.particles.length; j++) {
         const p2 = this.particles[j];
         if (particlesToRemove.has(p2)) continue;
+        if (p1.type === 'reference_point' || p2.type === 'reference_point') continue;
 
         const dx = p2.x - p1.x;
         const dy = p2.y - p1.y;
@@ -310,40 +493,118 @@ export class GravityEngine {
             continue;
           }
 
-          let newMass: number;
-          let newType: ParticleType;
+          // Advanced Collision Logic
+          const dominant = p1.realMass >= p2.realMass ? p1 : p2;
+          const randomSuffix = Math.floor(100000 + Math.random() * 900000);
+          let newRealMass: number = p1.realMass + p2.realMass;
+          let newType: ParticleType = p1.density >= p2.density ? p1.type : p2.type;
+          let newName: string = `${dominant.name}-${randomSuffix}`;
           let annihilation = false;
+          let energyRelease = 0.5;
+          let flashTimer = 0.3;
+          let newDensity = Math.max(p1.realDensity, p2.realDensity);
+          let newDiameter: number | undefined = undefined;
 
-          const isP1Matter = p1.type === 'matter';
-          const isP2Matter = p2.type === 'matter';
-          const isP1Antimatter = p1.type === 'antimatter';
-          const isP2Antimatter = p2.type === 'antimatter';
+          const isBH = (p: Particle) => p.type === 'blackhole' || p.type === 'quasar';
+          const isStar = (p: Particle) => ['sun', 'giant_star', 'supermassive_star', 'white_dwarf', 'blue_giant', 'red_dwarf', 'neutron', 'neutron_star', 'pulsar', 'magnetar'].includes(p.type);
+          const isPlanet = (p: Particle) => ['planet', 'asteroid', 'comet'].includes(p.type);
+          const isMatter = (p: Particle) => p.type === 'matter';
+          const isAntimatter = (p: Particle) => p.type === 'antimatter';
 
-          // Matter vs Antimatter annihilation logic
-          if ((isP1Matter && isP2Antimatter) || (isP1Antimatter && isP2Matter)) {
-            annihilation = true;
-            const matterPart = isP1Matter ? p1 : p2;
-            const antiPart = isP1Antimatter ? p1 : p2;
+          // 1. Black Hole / Quasar vs Anything
+          if (isBH(p1) || isBH(p2)) {
+            const bh = isBH(p1) ? p1 : p2;
+            const other = isBH(p1) ? p2 : p1;
             
-            const diff = matterPart.mass - antiPart.mass;
-            if (diff > 0) {
-              newMass = diff;
-              newType = 'matter';
-            } else if (diff < 0) {
-              newMass = Math.abs(diff);
-              newType = 'antimatter';
+            if (isBH(other)) {
+              // Merger of two black holes/quasars
+              newType = (p1.type === 'quasar' || p2.type === 'quasar') ? 'quasar' : 'blackhole';
+              // Keep the user's requested format even for mergers
+              energyRelease = 0.9; // Gravitational waves
+              flashTimer = 0.6;
             } else {
-              newMass = 0;
-              newType = 'matter'; // Mass is 0, will be removed
+              // Devouring
+              newType = bh.type;
+              newName = bh.name;
+              energyRelease = 0.3; // Accretion energy
+              flashTimer = 0.4;
             }
-          } else {
-            // Standard collision: sum masses
-            newMass = p1.mass + p2.mass;
-            // Resulting type is the one with higher density
-            newType = p1.density >= p2.density ? p1.type : p2.type;
+            newDensity = bh.realDensity;
+          } 
+          // 2. Matter vs Antimatter (or any matter-based object vs antimatter)
+          else if ((!isAntimatter(p1) && isAntimatter(p2)) || (!isAntimatter(p2) && isAntimatter(p1))) {
+            annihilation = true;
+            energyRelease = 1.0;
+            flashTimer = 1.0;
+            const diff = Math.abs(p1.realMass - p2.realMass);
+            if (diff < p1.realMass * 0.001) {
+              newRealMass = 0; // Total annihilation
+            } else {
+              newRealMass = diff;
+              newType = p1.realMass > p2.realMass ? p1.type : p2.type;
+              // Annihilation remnant follows the same naming rule
+            }
+          }
+          // 3. Star vs Star
+          else if (isStar(p1) && isStar(p2)) {
+            const isNS = (p: Particle) => ['neutron_star', 'pulsar', 'magnetar'].includes(p.type);
+            const isGiantOrFamous = (p: Particle) => ['giant_star', 'supermassive_star', 'blue_giant'].includes(p.type);
+            const isDwarfOrSun = (p: Particle) => ['sun', 'red_dwarf', 'white_dwarf'].includes(p.type);
+
+            // 3.1 Two Neutron Stars -> Black Hole
+            if (p1.type === 'neutron_star' && p2.type === 'neutron_star') {
+              newType = 'blackhole';
+              newDensity = 1e8;
+              energyRelease = 0.95;
+              flashTimer = 0.8;
+            } 
+            // 3.2 Giant/Famous vs Sun/Dwarf (Exception: NS/Pulsar/Magnetar)
+            else if (!isNS(p1) && !isNS(p2) && ((isGiantOrFamous(p1) && isDwarfOrSun(p2)) || (isGiantOrFamous(p2) && isDwarfOrSun(p1)))) {
+              const giant = isGiantOrFamous(p1) ? p1 : p2;
+              newType = giant.type;
+              newDiameter = giant.realDiameter;
+              newDensity = giant.realDensity;
+              energyRelease = 0.6;
+            }
+            // 3.3 Other NS/Pulsar/Magnetar mergers
+            else if (isNS(p1) || isNS(p2)) {
+               if (newRealMass > 2.5 * 1.989e30) {
+                 newType = 'blackhole';
+                 newDensity = 1e8;
+               } else {
+                 newType = 'magnetar';
+                 newDensity = 1e6;
+               }
+               energyRelease = 0.95;
+               flashTimer = 0.8;
+            } 
+            // 3.4 General star fusion
+            else {
+              if ((p1.type === 'giant_star' && p2.type === 'sun') || (p1.type === 'sun' && p2.type === 'giant_star')) {
+                newType = 'supermassive_star';
+                newDensity = 0.5;
+              } else {
+                newType = newRealMass > 5 * 1.989e30 ? 'supermassive_star' : 'blue_giant';
+              }
+              energyRelease = 0.7;
+            }
+          }
+          // 4. Star vs Planet
+          else if ((isStar(p1) && isPlanet(p2)) || (isStar(p2) && isPlanet(p1))) {
+            const star = isStar(p1) ? p1 : p2;
+            newType = star.type;
+            newName = star.name;
+            newDensity = star.realDensity;
+            energyRelease = 0.2;
+            flashTimer = 0.4;
+          }
+          // 5. Planet vs Planet
+          else if (isPlanet(p1) && isPlanet(p2)) {
+            newType = 'planet';
+            energyRelease = 0.4;
           }
 
-          if (newMass > 0) {
+          if (newRealMass > 0) {
             // Conserve momentum
             const totalMassForMomentum = p1.mass + p2.mass;
             const newVx = (p1.vx * p1.mass + p2.vx * p2.mass) / totalMassForMomentum;
@@ -352,10 +613,6 @@ export class GravityEngine {
             // Center of mass position
             const newX = (p1.x * p1.mass + p2.x * p2.mass) / totalMassForMomentum;
             const newY = (p1.y * p1.mass + p2.y * p2.mass) / totalMassForMomentum;
-
-            // Use the density of the "winner" (higher density particle)
-            const winner = p1.density >= p2.density ? p1 : p2;
-            const newDensity = winner.density;
             
             // Blended color based on mass contribution
             const newColor: Color = {
@@ -365,19 +622,20 @@ export class GravityEngine {
             };
 
             const merged = new Particle(
-              newMass,
+              newRealMass,
               newX,
               newY,
               newVx,
               newVy,
               newType,
-              `New Particle - ${Math.floor(100000 + Math.random() * 900000)}`,
+              newName,
               newDensity,
-              newColor
+              newColor,
+              newDiameter
             );
             
-            merged.collisionEnergy = annihilation ? 1.0 : 0.5;
-            merged.collisionTimer = annihilation ? 0.8 : 0.3;
+            merged.collisionEnergy = energyRelease;
+            merged.collisionTimer = flashTimer;
             newParticles.push(merged);
           }
 
@@ -549,6 +807,137 @@ export class GravityEngine {
           const type: ParticleType = Math.random() > 0.9 ? 'neutron' : 'matter';
           this.addParticle(new Particle(100, cx + r * Math.cos(a), cy + r * Math.sin(a), -v * Math.sin(a), v * Math.cos(a), type, 'Cluster Star'));
         }
+        break;
+      }
+      case 'artemis_2': {
+        // Artemis II Mission Scenario - Technical Refinement
+        // Natural Scale: 1 Sim Unit ≈ 9067 km | 1 Sim Velocity Unit ≈ 42.7 m/s
+        
+        // 1. Celestial Bodies
+        const earthMass = 5.972e24; // kg
+        const earthDensity = 5.51;  // g/cm3
+        const earthDiameter = 12742; // km
+        const earth = new Particle(earthMass, cx, cy, 0, 0, 'planet', 'Earth', earthDensity, { 0: 34, 1: 113, 2: 179 }, earthDiameter);
+        
+        const moonMass = 7.342e22; // kg
+        const moonDensity = 3.34;  // g/cm3
+        const moonDiameter = 3474; // km
+        const earthMoonDist = 42.4; // 384,400 km / 9067
+        
+        // Sincronización para Figure-8 (Infinity Symbol)
+        // La nave debe pasar por el lado lejano de la Luna
+        const initialMoonAngle = 1.65; 
+        const moonX = cx + earthMoonDist * Math.cos(initialMoonAngle);
+        const moonY = cy + earthMoonDist * Math.sin(initialMoonAngle);
+        const moonVelMag = Math.sqrt((this.G * earth.mass) / earthMoonDist);
+        const moonVx = -moonVelMag * Math.sin(initialMoonAngle);
+        const moonVy = moonVelMag * Math.cos(initialMoonAngle);
+        const moon = new Particle(moonMass, moonX, moonY, moonVx, moonVy, 'planet', 'The Moon', moonDensity, { 0: 200, 1: 200, 2: 200 }, moonDiameter);
+        
+        this.addParticle(earth);
+        this.addParticle(moon);
+        
+        // 2. Orion Spacecraft
+        // Masa TLI: 26,308 kg
+        const orionMass = 26308;
+        // Órbita elíptica inicial: 185 km x 2,253 km
+        // Perigeo: (6371 + 185) / 9067 = 0.723
+        // Apogeo: (6371 + 2253) / 9067 = 0.951
+        const r_p = 0.723;
+        const r_a = 0.951;
+        const semiMajorAxis = (r_p + r_a) / 2;
+        // Velocidad en perigeo: v = sqrt(GM * (2/r - 1/a))
+        const v_p = Math.sqrt(this.G * earth.mass * (2/r_p - 1/semiMajorAxis));
+        
+        const orion = new Particle(orionMass, cx + r_p, cy, 0, v_p, 'spacecraft', 'Artemis II (Orion)', 1, { 0: 255, 1: 255, 2: 255 }, 0.005);
+        
+        let missionTime = 0;
+        let phase = 0; // 0: Elliptical Loops, 1: TLI, 2: Transit, 3: Lunar Flyby, 4: Return
+        let loops = 0;
+        let lastAngle = 0;
+        
+        orion.onUpdate = (p, h) => {
+          missionTime += h;
+          const dx = p.x - earth.x;
+          const dy = p.y - earth.y;
+          const distToEarth = Math.sqrt(dx * dx + dy * dy);
+          const distToMoon = Math.sqrt(Math.pow(p.x - moon.x, 2) + Math.pow(p.y - moon.y, 2));
+          const currentAngle = Math.atan2(dy, dx);
+
+          // 1. Órbita elíptica inicial (2 vueltas)
+          if (phase === 0) {
+            if (lastAngle < 0 && currentAngle >= 0 && dx > 0) {
+              loops++;
+              if (loops >= 2) phase = 1;
+            }
+          }
+          lastAngle = currentAngle;
+
+          // 2. TLI (Trans-Lunar Injection)
+          // Empuje: 26.7 kN | Tiempo: 5m 50s
+          // En el simulador aplicamos un impulso para alcanzar la velocidad de escape (~11.1 km/s)
+          if (phase === 1) {
+            const angle = Math.atan2(p.vy, p.vx);
+            // Delta-V para inyección lunar
+            p.thrust = { ax: Math.cos(angle) * 45, ay: Math.sin(angle) * 45, duration: 2.0 };
+            phase = 2;
+          }
+          
+          // 3. Tránsito y Punto L1
+          if (phase === 2) {
+            // Velocidad en L1 (~322,000 km): 3,500 km/h (0.97 km/s)
+            if (distToMoon < 10) {
+              phase = 3;
+            }
+          }
+
+          // 4. Sobrevuelo Lunar (Altitud 10,300 km)
+          if (phase === 3) {
+            // La gravedad lunar curva la trayectoria (Figure-8)
+            if (distToMoon > 15 && p.vx < 0) {
+              phase = 4;
+            }
+          }
+
+          // 5. Retorno y Reentrada (11.2 km/s)
+          if (phase === 4) {
+            if (distToEarth < 1.5 && distToEarth > 0.8) {
+              // Aceleración para estabilizar o simular reentrada
+              const targetV = v_p;
+              const currentV = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+              const angle = Math.atan2(p.vy, p.vx);
+              
+              if (currentV < targetV) {
+                p.thrust = { ax: Math.cos(angle) * 30, ay: Math.sin(angle) * 30, duration: 1.5 };
+              } else {
+                p.thrust = { ax: -Math.cos(angle) * 30, ay: -Math.sin(angle) * 30, duration: 1.5 };
+              }
+            }
+
+            if (distToEarth < 0.75) {
+              // Reinicio del ciclo
+              phase = 0;
+              loops = 0;
+              missionTime = 0;
+              
+              // Re-alinear Luna
+              const mAngle = initialMoonAngle;
+              moon.x = earth.x + earthMoonDist * Math.cos(mAngle);
+              moon.y = earth.y + earthMoonDist * Math.sin(mAngle);
+              const mVelMag = Math.sqrt((this.G * earth.mass) / earthMoonDist);
+              moon.vx = -mVelMag * Math.sin(mAngle);
+              moon.vy = mVelMag * Math.cos(mAngle);
+
+              // Reset Orion a órbita elíptica
+              p.x = earth.x + r_p;
+              p.y = earth.y;
+              p.vx = 0;
+              p.vy = v_p;
+            }
+          }
+        };
+        
+        this.addParticle(orion);
         break;
       }
       case 'wormhole_bridge': {
@@ -1201,70 +1590,68 @@ export class GravityEngine {
         break;
       }
       case 'binary_system_chaos': {
-        const starSpecs: {type: ParticleType, mass: number, name: string, color: Color}[] = [
-          { type: 'matter', mass: 1e7, name: 'Yellow Dwarf', color: {0:255,1:215,2:0} },
-          { type: 'red_dwarf', mass: 2e6, name: 'Red Dwarf', color: {0:255,1:69,2:0} },
-          { type: 'blue_giant', mass: 8e7, name: 'Blue Giant', color: {0:0,1:191,2:255} },
-          { type: 'giant_star', mass: 3e7, name: 'Red Giant', color: {0:255,1:99,2:71} },
-          { type: 'white_dwarf', mass: 9e6, name: 'White Dwarf', color: {0:240,1:248,2:255} },
-          { type: 'neutron', mass: 1.2e7, name: 'Neutron Star', color: {0:173,1:216,2:230} },
-          { type: 'blackhole', mass: 2e7, name: 'Black Hole', color: {0:20,1:20,2:20} },
-          { type: 'supermassive_star', mass: 2e8, name: 'Hypergiant', color: {0:150,1:200,2:255} },
-          { type: 'pulsar', mass: 1.4e7, name: 'Pulsar', color: {0:200,1:230,2:255} },
-          { type: 'magnetar', mass: 1.5e7, name: 'Magnetar', color: {0:255,1:100,2:255} },
-          { type: 'quasar', mass: 5e7, name: 'Quasar', color: {0:255,1:255,2:200} }
+        const flavors = ['Stable', 'Eccentric', 'Exotic', 'Triple'] as const;
+        const flavor = flavors[Math.floor(Math.random() * flavors.length)];
+
+        const starSpecs = [
+          { type: 'sun' as ParticleType, mass: 1.989e30, name: 'Yellow Dwarf', color: {0:255,1:215,2:0}, density: 1.41, diameter: 1392700 },
+          { type: 'red_dwarf' as ParticleType, mass: 0.5 * 1.989e30, name: 'Red Dwarf', color: {0:255,1:69,2:0}, density: 5.0, diameter: 500000 },
+          { type: 'blue_giant' as ParticleType, mass: 20 * 1.989e30, name: 'Blue Giant', color: {0:0,1:191,2:255}, density: 0.05, diameter: 10000000 },
+          { type: 'giant_star' as ParticleType, mass: 5 * 1.989e30, name: 'Red Giant', color: {0:255,1:99,2:71}, density: 0.0001, diameter: 100000000 },
+          { type: 'white_dwarf' as ParticleType, mass: 1.0 * 1.989e30, name: 'White Dwarf', color: {0:240,1:248,2:255}, density: 1e6, diameter: 12000 },
+          { type: 'neutron_star' as ParticleType, mass: 1.4 * 1.989e30, name: 'Neutron Star', color: {0:173,1:216,2:230}, density: 1e14, diameter: 20 },
+          { type: 'blackhole' as ParticleType, mass: 10 * 1.989e30, name: 'Black Hole', color: {0:20,1:20,2:20}, density: 1e18, diameter: 30 },
+          { type: 'pulsar' as ParticleType, mass: 1.4 * 1.989e30, name: 'Pulsar', color: {0:200,1:230,2:255}, density: 1e14, diameter: 20 },
+          { type: 'magnetar' as ParticleType, mass: 1.5 * 1.989e30, name: 'Magnetar', color: {0:255,1:100,2:255}, density: 1e14, diameter: 20 }
         ];
 
         const s1 = starSpecs[Math.floor(Math.random() * starSpecs.length)];
         const s2 = starSpecs[Math.floor(Math.random() * starSpecs.length)];
         
-        const m1 = s1.mass * (0.8 + Math.random() * 0.4);
-        const m2 = s2.mass * (0.8 + Math.random() * 0.4);
-        
-        // Distance scales with the square root of total mass
-        const baseDist = 160;
-        const totalMassFactor = Math.sqrt((m1 + m2) / 2e7);
-        const dist = baseDist * totalMassFactor * (0.7 + Math.random() * 0.6);
-        
-        // Center of mass calculation
+        let m1 = s1.mass;
+        let m2 = s2.mass;
+        let type2 = s2.type;
+        let color2 = s2.color;
+        let name2 = s2.name;
+
+        if (flavor === 'Exotic') {
+          type2 = 'antimatter';
+          color2 = { 0: 100, 1: 50, 2: 255 };
+          name2 = 'Antimatter Companion';
+        }
+
+        const MASS_SCALE = 1e7 / 1.989e30;
+        const dist = 300 * (0.8 + Math.random() * 0.4);
         const r1 = (dist * m2) / (m1 + m2);
         const r2 = (dist * m1) / (m1 + m2);
         
-        // Orbital velocity for circular orbit around center of mass
-        // v = sqrt(G * M_total * r_self / d^2)
-        // Adding a slight eccentricity (0.95 to 1.05 of circular velocity)
-        const ecc = 0.95 + Math.random() * 0.1;
-        const v1 = ecc * Math.sqrt((this.G * m2 * r1)) / dist;
-        const v2 = ecc * Math.sqrt((this.G * m1 * r2)) / dist;
+        const ecc = flavor === 'Eccentric' ? 0.6 + Math.random() * 0.3 : 0.98 + Math.random() * 0.04;
+        const v1 = ecc * m2 * Math.sqrt(this.G / (dist * (m1 + m2) * MASS_SCALE));
+        const v2 = ecc * m1 * Math.sqrt(this.G / (dist * (m1 + m2) * MASS_SCALE));
         
-        this.addParticle(new Particle(m1, cx - r1, cy, 0, v1, s1.type, `${s1.name} A`, 1, s1.color));
-        this.addParticle(new Particle(m2, cx + r2, cy, 0, -v2, s2.type, `${s2.name} B`, 1, s2.color));
+        this.addParticle(new Particle(m1, cx - r1, cy, 0, v1, s1.type, `${s1.name} A`, s1.density, s1.color, s1.diameter));
+        this.addParticle(new Particle(m2, cx + r2, cy, 0, -v2, type2, `${name2} B`, s2.density, color2, s2.diameter));
         
-        // Add circumbinary debris/planets with mixed orbital directions
+        if (flavor === 'Triple') {
+          const tDist = 1200;
+          const tm = 2 * 1.989e30;
+          const tv = Math.sqrt((this.G * (m1 + m2 + tm) * MASS_SCALE) / tDist);
+          this.addParticle(new Particle(tm, cx + tDist, cy, 0, -tv, 'giant_star', 'Distant Tertiary', 0.001, {0:255,1:150,2:100}, 50000000));
+        }
+
+        // Add circumbinary debris
         const mTotal = m1 + m2;
-        const numObjects = 15 + Math.floor(Math.random() * 20);
-        for (let i = 0; i < numObjects; i++) {
-          const pr = dist * (2.5 + Math.random() * 6); 
+        for (let i = 0; i < 25; i++) {
+          const pr = dist * (2.5 + Math.random() * 8); 
           const pa = Math.random() * Math.PI * 2;
-          const pv = Math.sqrt((this.G * mTotal) / pr) * (0.95 + Math.random() * 0.1);
+          const isRetro = Math.random() > 0.7;
+          const dir = isRetro ? -1 : 1;
+          const pv = Math.sqrt((this.G * mTotal * MASS_SCALE) / pr) * (0.9 + Math.random() * 0.2);
           
-          const pType: ParticleType = Math.random() > 0.4 ? 'planet' : (Math.random() > 0.5 ? 'asteroid' : 'comet');
-          const pMass = pType === 'planet' ? 100 + Math.random() * 1500 : 1 + Math.random() * 30;
+          const pType: ParticleType = Math.random() > 0.5 ? 'planet' : (Math.random() > 0.5 ? 'asteroid' : 'comet');
+          const pMass = pType === 'planet' ? 5.972e24 * (0.1 + Math.random() * 15) : 1e18;
           
-          // Randomly choose orbital direction (Prograde vs Retrograde)
-          const isRetrograde = Math.random() > 0.7; // 30% chance for retrograde
-          const dir = isRetrograde ? -1 : 1;
-          const namePrefix = isRetrograde ? 'Retro ' : '';
-          
-          this.addParticle(new Particle(
-            pMass, 
-            cx + pr * Math.cos(pa), 
-            cy + pr * Math.sin(pa), 
-            -dir * pv * Math.sin(pa), 
-            dir * pv * Math.cos(pa), 
-            pType,
-            `${namePrefix}${pType.charAt(0).toUpperCase() + pType.slice(1)}`
-          ));
+          this.addParticle(new Particle(pMass, cx + pr * Math.cos(pa), cy + pr * Math.sin(pa), -dir * pv * Math.sin(pa), dir * pv * Math.cos(pa), pType, isRetro ? 'Retro Debris' : 'Debris'));
         }
         break;
       }
